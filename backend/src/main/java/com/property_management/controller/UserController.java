@@ -56,7 +56,7 @@ public class UserController {
             claims.put("id", loginUser.getId());
             claims.put("username", loginUser.getUserName());
             String token = JwtUtil.genToken(claims);
-            return R.success(SuccessResultCode.AUTHENTICATION_SUCCESS.getCode(), token);
+            return R.success(SuccessResultCode.AUTHENTICATION_SUCCESS.getCode(), "登录成功", token);
         }
         return R.fail(FailResultCode.FAIL.getCode(), "密码错误");
     }

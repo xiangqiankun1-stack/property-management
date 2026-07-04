@@ -1,4 +1,4 @@
-package com.property_management.service.Impl;
+package com.property_management.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.property_management.dao.SysUserRole;

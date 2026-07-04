@@ -1,4 +1,4 @@
-package com.property_management.service.Impl;
+package com.property_management.service.impl;
 
 import com.property_management.dao.SysUserInfo;
 import com.property_management.mapper.UserMapper;

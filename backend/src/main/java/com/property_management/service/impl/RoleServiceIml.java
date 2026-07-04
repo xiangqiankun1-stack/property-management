@@ -1,4 +1,4 @@
-package com.property_management.service.Impl;
+package com.property_management.service.impl;
 
 import com.property_management.dao.SysRoleInfo;
 import com.property_management.mapper.RoleMapper;

@@ -475,9 +475,7 @@ VALUES
 INSERT INTO complaint
 (id, create_time, update_time, create_user, update_user, description, remark, complaint_no, owner_id, complaint_type, complaint_category, complaint_title, complaint_content, complaint_images, contact_phone, handle_user_id, handle_time, handle_result, status, satisfaction)
 VALUES
-    (1, '2026-02-05 11:00:00', '2026-02-06 09:00:00', 1, 1, NULL, NULL, 'CP20260205001', 3, 1, '环境卫生', '楼道垃圾清理不及时', '2单元楼道垃圾桶经常堆满，希望增加清运频次', NULL, '13900000003', 4, '2026-02-06 09:00:00', '已与保洁公司沟通，增加每日清运次数', 2, 4),
-    (2, '2026-02-07 16:30:00', NULL, 1, 1, NULL, NULL, 'CP20260207001', 1, 2, '物业服务', '建议增设快递柜', '小区门口人流量大，建议增设智能快递柜方便取件', NULL, '13900000001', NULL, NULL, 0, NULL);
-
+    (1, '2026-02-05 11:00:00', '2026-02-06 09:00:00', 1, 1, NULL, NULL, 'CP20260205001', 3, 1, '环境卫生', '楼道垃圾清理不及时', '2单元楼道垃圾桶经常堆满，希望增加清运频次', NULL, '13900000003', 4, '2026-02-06 09:00:00', '已与保洁公司沟通，增加每日清运次数', 2, 4);
 -- 3.5 巡检数据
 INSERT INTO inspection
 (id, create_time, update_time, create_user, update_user, description, remark, inspection_no, inspection_name, community_id, inspection_area, inspector_id, plan_start_time, plan_end_time, actual_start_time, actual_end_time, inspection_items, status)

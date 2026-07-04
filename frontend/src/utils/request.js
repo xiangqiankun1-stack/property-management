@@ -1,9 +1,11 @@
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 
-// 创建实例
+/* =========================
+   创建 axios 实例
+========================= */
 const service = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
   timeout: 10000
 })
 
@@ -15,6 +17,7 @@ service.interceptors.request.use(
     const token = localStorage.getItem('token')
 
     if (token) {
+      // 统一使用 Bearer（更标准）
       config.headers.Authorization = `Bearer ${token}`
     }
 
@@ -32,11 +35,10 @@ service.interceptors.response.use(
   (response) => {
     const res = response.data
 
-    // 这里是后端统一格式（很重要）
+    // 兼容后端统一格式
     // { code: 200, data: xxx, msg: "" }
-
     if (res.code !== 200) {
-      ElMessage.error(res.msg || '请求失败')
+      ElMessage.error(res.msg || res.message || '请求失败')
       return Promise.reject(res)
     }
 
@@ -56,5 +58,5 @@ service.interceptors.response.use(
     return Promise.reject(error)
   }
 )
-//test
+
 export default service

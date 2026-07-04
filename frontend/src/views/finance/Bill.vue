@@ -1,7 +1,7 @@
 <template>
   <div>
 
-    <!- 搜索 ->
+    <!-- 搜索 -->
     <CrudSearch
       :model="query"
       :fields="searchFields"
@@ -93,14 +93,14 @@ const columns = [
 ]
 
 /* ========================
-   搜索
+   搜索配置
 ======================== */
 const searchFields = [
   { label: '账单名称', prop: 'billName', type: 'input' }
 ]
 
 /* ========================
-   表单字段（重点🔥）
+   表单配置
 ======================== */
 const formFields = [
   { label: '账单名称', prop: 'billName' },
@@ -128,7 +128,7 @@ const formFields = [
 ]
 
 /* ========================
-   查询列表
+   查询
 ======================== */
 const loadData = async () => {
   loading.value = true

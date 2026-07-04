@@ -52,14 +52,13 @@ import {
 } from '@/api/repair'
 
 /* ========================
-   数据
+   状态
 ======================== */
 const tableData = ref([])
 const loading = ref(false)
 const total = ref(0)
 const dialogVisible = ref(false)
 
-/* 当前模式：add / edit */
 const mode = ref('add')
 
 /* ========================
@@ -72,7 +71,7 @@ const query = reactive({
 })
 
 /* ========================
-   表单数据
+   表单
 ======================== */
 const form = reactive({
   id: null,
@@ -90,10 +89,16 @@ const columns = [
   { label: '创建时间', prop: 'createTime' }
 ]
 
+/* ========================
+   搜索配置
+======================== */
 const searchFields = [
   { label: '标题', prop: 'title', type: 'input' }
 ]
 
+/* ========================
+   表单配置
+======================== */
 const formFields = [
   { label: '标题', prop: 'title' },
   { label: '描述', prop: 'description' }
@@ -150,7 +155,7 @@ const handleDelete = (row) => {
 }
 
 /* ========================
-   提交（新增/修改合并）
+   提交
 ======================== */
 const submit = async () => {
   if (!form.title) {
@@ -184,7 +189,7 @@ const handlePageChange = (page) => {
 
 /* ========================
    重置
-======================= */
+======================== */
 const reset = () => {
   query.title = ''
   query.pageNum = 1

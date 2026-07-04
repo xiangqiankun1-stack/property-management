@@ -1,13 +1,17 @@
 <template>
   <div class="dashboard">
 
-    <!-- KPI 卡片 -->
-    <div class="card-row">
-      <el-card v-for="item in summaryList" :key="item.title" class="card">
-        <div class="card-title">{{ item.title }}</div>
-        <div class="card-value">{{ item.value }}</div>
-      </el-card>
-    </div>
+    <!-- KPI 卡片（用 el-row 优化布局） -->
+    <el-row :gutter="20" class="card-row">
+
+      <el-col :span="6" v-for="item in summaryList" :key="item.title">
+        <el-card class="card">
+          <div class="card-title">{{ item.title }}</div>
+          <div class="card-value">{{ item.value }}</div>
+        </el-card>
+      </el-col>
+
+    </el-row>
 
     <!-- 图表区域 -->
     <div class="chart-row">
@@ -49,7 +53,7 @@ const paymentChartRef = ref()
 let repairChart, complaintChart, paymentChart
 
 /* ========================
-   初始化数据
+   统计数据
 ======================== */
 const loadSummary = async () => {
   const res = await getDashboardSummary()
@@ -74,13 +78,7 @@ const loadRepairChart = async () => {
     title: { text: '报修趋势' },
     xAxis: { type: 'category', data: res.days },
     yAxis: { type: 'value' },
-    series: [
-      {
-        data: res.counts,
-        type: 'line',
-        smooth: true
-      }
-    ]
+    series: [{ data: res.counts, type: 'line', smooth: true }]
   })
 }
 
@@ -96,12 +94,7 @@ const loadComplaintChart = async () => {
     title: { text: '投诉趋势' },
     xAxis: { type: 'category', data: res.days },
     yAxis: { type: 'value' },
-    series: [
-      {
-        data: res.counts,
-        type: 'bar'
-      }
-    ]
+    series: [{ data: res.counts, type: 'bar' }]
   })
 }
 
@@ -141,36 +134,31 @@ onMounted(() => {
   padding: 20px;
 }
 
+/* KPI */
 .card-row {
-  display: flex;
-  gap: 20px;
   margin-bottom: 20px;
 }
 
-.card {
-  flex: 1;
-  text-align: center;
-}
-
 .card-title {
-  font-size: 14px;
   color: #666;
+  font-size: 14px;
 }
 
 .card-value {
-  font-size: 24px;
+  font-size: 26px;
   font-weight: bold;
   margin-top: 10px;
 }
 
+/* 图表 */
 .chart-row {
   display: flex;
   gap: 20px;
 }
 
 .chart {
-  width: 60%;
-  height: 300px;
+  width: 50%;
+  height: 320px;
   background: #fff;
   padding: 10px;
 }

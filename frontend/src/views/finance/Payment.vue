@@ -9,6 +9,11 @@
       @reset="reset"
     />
 
+    <!-- 新增按钮（你这份缺了，补上） -->
+    <el-button type="primary" @click="handleAdd" style="margin: 10px 0;">
+      新增缴费
+    </el-button>
+
     <!-- 表格 -->
     <CrudTable
       :tableData="tableData"
@@ -84,28 +89,19 @@ const columns = [
 ]
 
 /* ========================
-   搜索
+   搜索配置
 ======================== */
 const searchFields = [
   { label: '缴费人', prop: 'payer', type: 'input' }
 ]
 
 /* ========================
-   表单字段（重点🔥）
+   表单配置
 ======================== */
 const formFields = [
-  {
-    label: '账单ID',
-    prop: 'billId'
-  },
-  {
-    label: '缴费人',
-    prop: 'payer'
-  },
-  {
-    label: '金额',
-    prop: 'amount'
-  },
+  { label: '账单ID', prop: 'billId' },
+  { label: '缴费人', prop: 'payer' },
+  { label: '金额', prop: 'amount' },
   {
     label: '支付方式',
     prop: 'method',
@@ -119,7 +115,7 @@ const formFields = [
 ]
 
 /* ========================
-   查询列表
+   查询
 ======================== */
 const loadData = async () => {
   loading.value = true
@@ -187,7 +183,7 @@ const handlePageChange = (page) => {
   loadData()
 }
 
-/* =======================
+/* ========================
    重置
 ======================== */
 const reset = () => {

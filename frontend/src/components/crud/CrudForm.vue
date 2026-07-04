@@ -1,5 +1,5 @@
 <template>
-  <el-dialog :title="title" v-model="visible" width="500px">
+  <el-dialog :title="title" :visible="visible" @update:visible="$emit('update:visible', $event)" width="500px">
     <el-form :model="model" label-width="80px">
       <el-form-item
         v-for="item in fields"

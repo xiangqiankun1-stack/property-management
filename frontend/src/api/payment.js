@@ -3,24 +3,25 @@ import request from '@/utils/request'
 // 查询缴费记录
 export const getPaymentList = (params) => {
   return request({
-    url: '/payment/list',
+    url: '/payments',
     method: 'get',
     params
   })
 }
 
 // 新增缴费记录
-export const addPayment = (data) => {
+export const createPayment = (data) => {
   return request({
-    url: '/payment',
+    url: '/payments',
     method: 'post',
     data
   })
 }
-//test
+
+// 删除缴费记录
 export const deletePayment = (id) => {
   return request({
-    url: `/payment/${id}`,
+    url: `/payments/${id}`,
     method: 'delete'
   })
 }

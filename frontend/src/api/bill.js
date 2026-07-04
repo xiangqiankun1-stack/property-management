@@ -3,25 +3,33 @@ import request from '@/utils/request'
 // 查询账单列表
 export const getBillList = (params) => {
   return request({
-    url: '/bill/list',
+    url: '/bills',
     method: 'get',
     params
   })
 }
 
-// 新增账单test
-export const addBill = (data) => {
+// 根据ID查询账单
+export const getBillById = (id) => {
   return request({
-    url: '/bill',
+    url: `/bills/${id}`,
+    method: 'get'
+  })
+}
+
+// 新增账单
+export const createBill = (data) => {
+  return request({
+    url: '/bills',
     method: 'post',
     data
   })
 }
 
 // 修改账单
-export const updateBill = (data) => {
+export const updateBill = (id, data) => {
   return request({
-    url: '/bill',
+    url: `/bills/${id}`,
     method: 'put',
     data
   })
@@ -30,7 +38,7 @@ export const updateBill = (data) => {
 // 删除账单
 export const deleteBill = (id) => {
   return request({
-    url: `/bill/${id}`,
+    url: `/bills/${id}`,
     method: 'delete'
   })
 }

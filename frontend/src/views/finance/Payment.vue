@@ -28,7 +28,7 @@
 
     <!-- 表单 -->
     <CrudForm
-      v-model:visible="dialogVisible"
+      v-model="dialogVisible"
       :model="form"
       :fields="formFields"
       title="缴费"

@@ -20,12 +20,32 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void register(SysUserInfo sysUserInfo) {
-        userMapper.insert(sysUserInfo);
+    public boolean register(SysUserInfo sysUserInfo) {
+        return userMapper.insert(sysUserInfo) > 0;
     }
 
     @Override
-    public List<SysUserInfo> getAlls() {
+    public List<SysUserInfo> getAll() {
         return userMapper.selectList(null);
+    }
+
+    @Override
+    public SysUserInfo getById(Long id) {
+        return userMapper.selectById(id);
+    }
+
+    @Override
+    public boolean add(SysUserInfo sysUserInfo) {
+        return userMapper.insert(sysUserInfo) > 0;
+    }
+
+    @Override
+    public boolean delete(Long id) {
+        return userMapper.deleteById(id) > 0;
+    }
+
+    @Override
+    public boolean update(SysUserInfo sysUserInfo) {
+        return userMapper.updateById(sysUserInfo) > 0;
     }
 }

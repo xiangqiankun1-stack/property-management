@@ -15,22 +15,27 @@ public class PermissionServiceImpl implements PermissionService {
     private PermissionMapper permissionMapper;
 
     @Override
-    public List<SysPermissionInfo> getAlls() {
+    public List<SysPermissionInfo> getAll() {
         return permissionMapper.selectList(null);
     }
 
     @Override
-    public void addPermission(SysPermissionInfo sysPermissionInfo) {
-        permissionMapper.insert(sysPermissionInfo);
+    public SysPermissionInfo getById(Long id) {
+        return permissionMapper.selectById(id);
     }
 
     @Override
-    public void deletePermission(SysPermissionInfo sysPermissionInfo) {
-        permissionMapper.deleteById(sysPermissionInfo);
+    public boolean add(SysPermissionInfo sysPermissionInfo) {
+        return permissionMapper.insert(sysPermissionInfo) > 0;
     }
 
     @Override
-    public void updatePermission(SysPermissionInfo sysPermissionInfo) {
-        permissionMapper.updateById(sysPermissionInfo);
+    public boolean delete(Long id) {
+        return permissionMapper.deleteById(id) > 0;
+    }
+
+    @Override
+    public boolean update(SysPermissionInfo sysPermissionInfo) {
+        return permissionMapper.updateById(sysPermissionInfo) > 0;
     }
 }

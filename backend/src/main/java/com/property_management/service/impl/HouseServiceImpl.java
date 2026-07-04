@@ -21,23 +21,23 @@ public class HouseServiceImpl implements HouseService {
     }
 
     @Override
-    public void addHouse(House house) {
-        houseMapper.insert(house);
-    }
-
-    @Override
-    public void deleteHouse(House house) {
-        houseMapper.deleteById(house.getId());
-    }
-
-    @Override
-    public void updateHouse(House house) {
-        houseMapper.updateById(house);
-    }
-
-    @Override
-    public House getDetail(Long id) {
+    public House getById(Long id) {
         return houseMapper.selectById(id);
+    }
+
+    @Override
+    public boolean add(House house) {
+        return houseMapper.insert(house) > 0;
+    }
+
+    @Override
+    public boolean update(House house) {
+        return houseMapper.updateById(house) > 0;
+    }
+
+    @Override
+    public boolean delete(Long id) {
+        return houseMapper.deleteById(id) >= 0;
     }
 
     @Override

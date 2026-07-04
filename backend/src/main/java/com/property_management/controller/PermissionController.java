@@ -12,39 +12,72 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/permission")
+@RequestMapping("/api/v1/permissions")
 public class PermissionController {
 
     @Autowired
     private PermissionService permissionService;
 
-    //获取权限列表
-    @GetMapping("/getPermissions")
-    public R<List<SysPermissionInfo>> getPermissions(){
-        List<SysPermissionInfo> list = permissionService.getAlls();
-        if (list == null)
-            return R.fail(FailResultCode.FAIL.getCode(),"获取失败");
+    /**
+     * 获取权限列表
+     * GET /api/v1/permissions
+     */
+    @GetMapping
+    public R<List<SysPermissionInfo>> list() {
+        List<SysPermissionInfo> list = permissionService.getAll();
         return R.success(SuccessResultCode.SUCCESS.getCode(), "获取成功", list);
     }
 
-    //添加权限
-    @PostMapping("/addPermission")
-    public R<Void> addPermission(@Validated @RequestBody SysPermissionInfo sysPermissionInfo){
-        permissionService.addPermission(sysPermissionInfo);
-        return R.success(SuccessResultCode.SUCCESS.getCode(), "添加成功");
+    /**
+     * 获取单个权限
+     * GET /api/v1/permissions/{id}
+     */
+    @GetMapping("/{id}")
+    public R<SysPermissionInfo> getById(@PathVariable Long id) {
+        SysPermissionInfo permission = permissionService.getById(id);
+        if (permission == null) {
+            return R.fail(FailResultCode.FAIL.getCode(), "权限不存在");
+        }
+        return R.success(SuccessResultCode.SUCCESS.getCode(), "获取成功", permission);
     }
 
-    //删除权限
-    @PostMapping("/deletePermission")
-    public R<Void> deletePermission(@RequestBody SysPermissionInfo sysPermissionInfo){
-        permissionService.deletePermission(sysPermissionInfo);
-        return R.success(SuccessResultCode.SUCCESS.getCode(), "删除成功");
+    /**
+     * 新增权限
+     * POST /api/v1/permissions
+     */
+    @PostMapping
+    public R<Void> add(@Validated @RequestBody SysPermissionInfo sysPermissionInfo) {
+        boolean result = permissionService.add(sysPermissionInfo);
+        if (result) {
+            return R.success(SuccessResultCode.SUCCESS.getCode(), "新增成功");
+        }
+        return R.fail(FailResultCode.FAIL.getCode(), "新增失败");
     }
 
-    //修改权限
-    @PostMapping("/updatePermission")
-    public R<Void> updatePermission(@Validated @RequestBody SysPermissionInfo sysPermissionInfo){
-        permissionService.updatePermission(sysPermissionInfo);
-        return R.success(SuccessResultCode.SUCCESS.getCode(), "修改成功");
+    /**
+     * 更新权限
+     * PUT /api/v1/permissions/{id}
+     */
+    @PutMapping("/{id}")
+    public R<Void> update(@PathVariable Long id, @Validated @RequestBody SysPermissionInfo sysPermissionInfo) {
+        sysPermissionInfo.setId(id);
+        boolean result = permissionService.update(sysPermissionInfo);
+        if (result) {
+            return R.success(SuccessResultCode.SUCCESS.getCode(), "更新成功");
+        }
+        return R.fail(FailResultCode.FAIL.getCode(), "更新失败");
+    }
+
+    /**
+     * 删除权限
+     * DELETE /api/v1/permissions/{id}
+     */
+    @DeleteMapping("/{id}")
+    public R<Void> delete(@PathVariable Long id) {
+        boolean result = permissionService.delete(id);
+        if (result) {
+            return R.success(SuccessResultCode.SUCCESS.getCode(), "删除成功");
+        }
+        return R.fail(FailResultCode.FAIL.getCode(), "删除失败");
     }
 }

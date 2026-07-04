@@ -15,22 +15,27 @@ public class RoleServiceIml implements RoleService {
     private RoleMapper roleMapper;
 
     @Override
-    public List<SysRoleInfo> getAlls() {
-        return roleMapper.selectList( null);
+    public List<SysRoleInfo> getAll() {
+        return roleMapper.selectList(null);
     }
 
     @Override
-    public void addRole(SysRoleInfo sysRoleInfo) {
-        roleMapper.insert(sysRoleInfo);
+    public SysRoleInfo getById(Long id) {
+        return roleMapper.selectById(id);
     }
 
     @Override
-    public void deleteRole(SysRoleInfo sysRoleInfo) {
-        roleMapper.deleteById(sysRoleInfo);
+    public boolean add(SysRoleInfo sysRoleInfo) {
+        return roleMapper.insert(sysRoleInfo) > 0;
     }
 
     @Override
-    public void updateRole(SysRoleInfo sysRoleInfo) {
-        roleMapper.updateById(sysRoleInfo);
+    public boolean delete(Long id) {
+        return roleMapper.deleteById(id) > 0;
+    }
+
+    @Override
+    public boolean update(SysRoleInfo sysRoleInfo) {
+        return roleMapper.updateById(sysRoleInfo) > 0;
     }
 }

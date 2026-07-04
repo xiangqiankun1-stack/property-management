@@ -16,7 +16,7 @@ public class UserRoleServiceImpl implements UserRoleService {
     private UserRoleMapper userRoleMapper;
 
     @Override
-    public void addUserRole(SysUserRole sysUserRole) {
+    public boolean add(SysUserRole sysUserRole) {
 
         LambdaQueryWrapper<SysUserRole> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(SysUserRole::getUserInfoId, sysUserRole.getUserInfoId())
@@ -28,17 +28,17 @@ public class UserRoleServiceImpl implements UserRoleService {
             throw new RuntimeException("该用户已拥有此角色，不能重复添加");
         }
 
-        userRoleMapper.insert(sysUserRole);
+        return userRoleMapper.insert(sysUserRole) > 0;
     }
 
     @Override
-    public void deleteUserRole(SysUserRole sysUserRole) {
-        userRoleMapper.deleteById(sysUserRole);
+    public boolean delete(Long id) {
+        return userRoleMapper.deleteById(id) > 0;
     }
 
     @Override
-    public void updateUserRole(SysUserRole sysUserRole) {
-        userRoleMapper.updateById(sysUserRole);
+    public boolean update(SysUserRole sysUserRole) {
+        return userRoleMapper.updateById(sysUserRole) > 0;
     }
 
     @Override

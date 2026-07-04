@@ -6,11 +6,28 @@ import com.property_management.dao.SysRoleInfo;
 import java.util.List;
 
 public interface RoleService {
-    List<SysRoleInfo> getAlls();
+    /**
+     * 查询所有角色
+     */
+    List<SysRoleInfo> getAll();
 
-    void addRole(SysRoleInfo sysRoleInfo);
+    /**
+     * 根据ID查询角色
+     */
+    SysRoleInfo getById(Long id);
 
-    void deleteRole(SysRoleInfo sysRoleInfo);
+    /**
+     * 新增角色
+     */
+    boolean add(SysRoleInfo sysRoleInfo);
 
-    void updateRole(SysRoleInfo sysRoleInfo);
+    /**
+     * 更新角色
+     */
+    boolean update(SysRoleInfo sysRoleInfo);
+
+    /**
+     * 删除角色
+     */
+    boolean delete(Long id);
 }

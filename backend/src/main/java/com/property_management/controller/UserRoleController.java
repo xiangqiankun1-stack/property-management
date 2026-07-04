@@ -12,42 +12,63 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/userRole")
+@RequestMapping("/api/v1/user-roles")
 public class UserRoleController {
 
     @Autowired
     private UserRoleService userRoleService;
 
-    //添加用户角色
-    @PostMapping("/addUserRole")
-    public R<Void> addUserRole(@Validated @RequestBody SysUserRole sysUserRole){
+    /**
+     * 新增用户角色
+     * POST /api/v1/user-roles
+     */
+    @PostMapping
+    public R<Void> add(@Validated @RequestBody SysUserRole sysUserRole) {
         try {
-            userRoleService.addUserRole(sysUserRole);
-        }catch (Exception e) {
-            return R.fail(FailResultCode.FAIL.getCode(),e.getMessage());
-        } finally {
-            return R.success(SuccessResultCode.SUCCESS.getCode(), "添加成功");
+            boolean result = userRoleService.add(sysUserRole);
+            if (result) {
+                return R.success(SuccessResultCode.SUCCESS.getCode(), "新增成功");
+            }
+            return R.fail(FailResultCode.FAIL.getCode(), "新增失败");
+        } catch (Exception e) {
+            return R.fail(FailResultCode.FAIL.getCode(), e.getMessage());
         }
     }
 
-    //删除用户角色
-    @PostMapping("/deleteUserRole")
-    public R<Void> deleteUserRole(@RequestBody SysUserRole sysUserRole){
-        userRoleService.deleteUserRole(sysUserRole);
-        return R.success(SuccessResultCode.SUCCESS.getCode(), "删除成功");
+    /**
+     * 更新用户角色
+     * PUT /api/v1/user-roles/{id}
+     */
+    @PutMapping("/{id}")
+    public R<Void> update(@PathVariable Long id, @Validated @RequestBody SysUserRole sysUserRole) {
+        sysUserRole.setId(id);
+        boolean result = userRoleService.update(sysUserRole);
+        if (result) {
+            return R.success(SuccessResultCode.SUCCESS.getCode(), "更新成功");
+        }
+        return R.fail(FailResultCode.FAIL.getCode(), "更新失败");
     }
 
-    //修改用户角色
-    @PostMapping("/updateUserRole")
-    public R<Void> updateUserRole(@Validated @RequestBody SysUserRole sysUserRole){
-        userRoleService.updateUserRole(sysUserRole);
-        return R.success(SuccessResultCode.SUCCESS.getCode(), "修改成功");
+    /**
+     * 删除用户角色
+     * DELETE /api/v1/user-roles/{id}
+     */
+    @DeleteMapping("/{id}")
+    public R<Void> delete(@PathVariable Long id) {
+        boolean result = userRoleService.delete(id);
+        if (result) {
+            return R.success(SuccessResultCode.SUCCESS.getCode(), "删除成功");
+        }
+        return R.fail(FailResultCode.FAIL.getCode(), "删除失败");
     }
 
-    //获取用户角色
-    @GetMapping("/getUserRole")
-    public R<List<String>> getUserRole(@RequestParam Long id){
+    /**
+     * 获取用户角色列表
+     * GET /api/v1/user-roles/{userId}/roles
+     */
+    @GetMapping("/{userId}/roles")
+    public R<List<String>> getUserRole(@PathVariable Long userId) {
         return R.success(SuccessResultCode.SUCCESS.getCode(), "获取成功",
-                userRoleService.getUserRole(id));
+                userRoleService.getUserRole(userId));
     }
 }

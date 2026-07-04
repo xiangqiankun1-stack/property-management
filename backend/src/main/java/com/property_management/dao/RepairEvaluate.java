@@ -1,6 +1,7 @@
 package com.property_management.dao;
 
 import com.baomidou.mybatisplus.annotation.TableName;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -12,16 +13,19 @@ public class RepairEvaluate extends BaseEntity {
     /**
      * 报修单ID
      */
+    @NotNull(message = "报修单ID不能为空")
     private Long repairId;
 
     /**
      * 评价业主ID
      */
+    @NotNull(message = "评价业主ID不能为空")
     private Long ownerId;
 
     /**
      * 评分(1-5分)
      */
+    @NotNull(message = "评分不能为空")
     private Integer score;
 
     /**

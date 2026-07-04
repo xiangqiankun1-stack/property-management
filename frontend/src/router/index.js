@@ -1,63 +1,59 @@
-import {createRouter,createWebHistory} from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 
 import Layout from '@/layout/Layout.vue'
 
-const routes=[
+const routes = [
+  {
+    path: '/',
+    component: Layout,
+    redirect: '/dashboard',
+    children: [
+      {
+        path: 'dashboard',
+        name: 'Dashboard',
+        component: () => import('@/views/dashboard/Dashboard.vue')
+      },
 
-{
-    path:'/',
-    redirect:'/dashboard'
-},
+      {
+        path: 'user',
+        name: 'User',
+        component: () => import('@/views/system/User.vue')
+      },
 
-{
-    path:'/',
-    component:Layout,
-    children:[
+      {
+        path: 'role',
+        name: 'Role',
+        component: () => import('@/views/system/Role.vue')
+      },
 
-        {
-            path:'dashboard',
-            component:()=>import('@/views/dashboard/index.vue')
-        },
+      {
+        path: 'community',
+        name: 'Community',
+        component: () => import('@/views/basic/Community.vue')
+      },
 
-        {
-            path:'user',
-            component:()=>import('@/views/system/User.vue')
-        },
+      {
+        path: 'building',
+        name: 'Building',
+        component: () => import('@/views/basic/Building.vue')
+      },
 
-        {
-            path:'role',
-            component:()=>import('@/views/system/Role.vue')
-        },
+      {
+        path: 'house',
+        name: 'House',
+        component: () => import('@/views/basic/House.vue')
+      },
 
-        {
-            path:'community',
-            component:()=>import('@/views/basic/Community.vue')
-        },
-
-        {
-            path:'building',
-            component:()=>import('@/views/basic/Building.vue')
-        },
-
-        {
-            path:'house',
-            component:()=>import('@/views/basic/House.vue')
-        },
-
-        {
-            path:'owner',
-            component:()=>import('@/views/basic/Owner.vue')
-        }
-
+      {
+        path: 'owner',
+        name: 'Owner',
+        component: () => import('@/views/basic/Owner.vue')
+      }
     ]
-}
-
+  }
 ]
 
 export default createRouter({
-
-history:createWebHistory(),
-
-routes
-
+  history: createWebHistory(),
+  routes
 })

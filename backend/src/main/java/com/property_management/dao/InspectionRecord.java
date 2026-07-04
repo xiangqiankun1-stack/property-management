@@ -1,6 +1,8 @@
 package com.property_management.dao;
 
 import com.baomidou.mybatisplus.annotation.TableName;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -14,21 +16,25 @@ public class InspectionRecord extends BaseEntity {
     /**
      * 巡检任务ID
      */
+    @NotNull(message = "巡检任务ID不能为空")
     private Long inspectionId;
 
     /**
      * 整改单号
      */
+    @NotBlank(message = "整改单号不能为空")
     private String recordNo;
 
     /**
      * 问题类型(设施损坏/安全隐患/环境问题/其他)
      */
+    @NotBlank(message = "问题类型不能为空")
     private String issueType;
 
     /**
      * 问题描述
      */
+    @NotBlank(message = "问题描述不能为空")
     private String issueDesc;
 
     /**
@@ -44,6 +50,7 @@ public class InspectionRecord extends BaseEntity {
     /**
      * 严重程度：1.轻微 2.一般 3.严重 4.紧急
      */
+    @NotNull(message = "严重程度不能为空")
     private Integer severity;
 
     /**
@@ -89,5 +96,6 @@ public class InspectionRecord extends BaseEntity {
     /**
      * 状态：0.待整改 1.整改中 2.待验收 3.已完成 4.已驳回
      */
+    @NotNull(message = "状态不能为空")
     private Integer status;
 }

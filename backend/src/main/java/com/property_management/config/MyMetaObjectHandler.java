@@ -20,11 +20,6 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
         }
 
         this.strictInsertFill(metaObject,
-                "version",
-                Integer.class,
-                1);
-
-        this.strictInsertFill(metaObject,
                 "createTime",
                 LocalDateTime.class,
                 LocalDateTime.now());

@@ -2,6 +2,7 @@ package com.property_management.dao;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -27,6 +28,7 @@ public class SysPermissionInfo extends BaseEntity {
      * 2：菜单
      * 3：按钮
      */
+    @NotNull(message = "权限类型不能为空")
     private Integer permissionType;
 
     /**
@@ -52,6 +54,7 @@ public class SysPermissionInfo extends BaseEntity {
     /**
      * 排序
      */
+    @NotNull(message = "排序不能为空")
     private Integer sort;
 
 }

@@ -33,7 +33,7 @@ public class UserRoleServiceImpl implements UserRoleService {
 
     @Override
     public boolean delete(Long id) {
-        return userRoleMapper.deleteById(id) > 0;
+        return userRoleMapper.deleteById(id) >= 0;
     }
 
     @Override

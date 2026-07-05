@@ -3,7 +3,7 @@ import request from '@/utils/request'
 // 查询报修列表
 export const getRepairList = (params) => {
   return request({
-    url: '/repairs',
+    url: '/api/v1/repairs',
     method: 'get',
     params
   })
@@ -12,7 +12,7 @@ export const getRepairList = (params) => {
 // 根据ID查询报修
 export const getRepairById = (id) => {
   return request({
-    url: `/repairs/${id}`,
+    url: `/api/v1/repairs/${id}`,
     method: 'get'
   })
 }
@@ -20,7 +20,7 @@ export const getRepairById = (id) => {
 // 新增报修
 export const createRepair = (data) => {
   return request({
-    url: '/repairs',
+    url: '/api/v1/repairs',
     method: 'post',
     data
   })
@@ -29,7 +29,7 @@ export const createRepair = (data) => {
 // 修改报修
 export const updateRepair = (id, data) => {
   return request({
-    url: `/repairs/${id}`,
+    url: `/api/v1/repairs/${id}`,
     method: 'put',
     data
   })
@@ -38,7 +38,7 @@ export const updateRepair = (id, data) => {
 // 删除报修
 export const deleteRepair = (id) => {
   return request({
-    url: `/repairs/${id}`,
+    url: `/api/v1/repairs/${id}`,
     method: 'delete'
   })
 }
@@ -46,7 +46,7 @@ export const deleteRepair = (id) => {
 // 报修派单
 export const assignRepair = (id, data) => {
   return request({
-    url: `/repairs/${id}/assign`,
+    url: `/api/v1/repairs/${id}/assign`,
     method: 'put',
     data
   })
@@ -55,7 +55,7 @@ export const assignRepair = (id, data) => {
 // 完成报修
 export const finishRepair = (id) => {
   return request({
-    url: `/repairs/${id}/finish`,
+    url: `/api/v1/repairs/${id}/finish`,
     method: 'put'
   })
 }
@@ -63,7 +63,7 @@ export const finishRepair = (id) => {
 // 报修评价
 export const commentRepair = (id, data) => {
   return request({
-    url: `/repairs/${id}/comment`,
+    url: `/api/v1/repairs/${id}/comment`,
     method: 'post',
     data
   })

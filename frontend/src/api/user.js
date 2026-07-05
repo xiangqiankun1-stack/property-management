@@ -3,7 +3,7 @@ import request from '@/utils/request'
 // 查询用户列表
 export const getUserList = (params) => {
   return request({
-    url: '/users',
+    url: '/api/v1/users',
     method: 'get',
     params
   })
@@ -12,7 +12,7 @@ export const getUserList = (params) => {
 // 根据ID查询用户
 export const getUserById = (id) => {
   return request({
-    url: `/users/${id}`,
+    url: `/api/v1/users/${id}`,
     method: 'get'
   })
 }
@@ -20,7 +20,7 @@ export const getUserById = (id) => {
 // 新增用户
 export const createUser = (data) => {
   return request({
-    url: '/users',
+    url: '/api/v1/users',
     method: 'post',
     data
   })
@@ -29,7 +29,7 @@ export const createUser = (data) => {
 // 修改用户
 export const updateUser = (id, data) => {
   return request({
-    url: `/users/${id}`,
+    url: `/api/v1/users/${id}`,
     method: 'put',
     data
   })
@@ -38,7 +38,7 @@ export const updateUser = (id, data) => {
 // 删除用户
 export const deleteUser = (id) => {
   return request({
-    url: `/users/${id}`,
+    url: `/api/v1/users/${id}`,
     method: 'delete'
   })
 }
@@ -46,7 +46,7 @@ export const deleteUser = (id) => {
 // 用户分配角色
 export const assignRole = (userId, data) => {
   return request({
-    url: `/users/${userId}/role`,
+    url: `/api/v1/users/${userId}/role`,
     method: 'put',
     data
   })

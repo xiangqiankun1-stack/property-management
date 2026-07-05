@@ -3,7 +3,7 @@ import request from '@/utils/request'
 // 查询小区列表
 export const getCommunityList = (params) => {
   return request({
-    url: '/communities',
+    url: '/api/v1/communities',
     method: 'get',
     params
   })
@@ -12,7 +12,7 @@ export const getCommunityList = (params) => {
 // 根据ID查询小区
 export const getCommunityById = (id) => {
   return request({
-    url: `/communities/${id}`,
+    url: `/api/v1/communities/${id}`,
     method: 'get'
   })
 }
@@ -20,7 +20,7 @@ export const getCommunityById = (id) => {
 // 新增小区
 export const createCommunity = (data) => {
   return request({
-    url: '/communities',
+    url: '/api/v1/communities',
     method: 'post',
     data
   })
@@ -29,7 +29,7 @@ export const createCommunity = (data) => {
 // 修改小区
 export const updateCommunity = (id, data) => {
   return request({
-    url: `/communities/${id}`,
+    url: `/api/v1/communities/${id}`,
     method: 'put',
     data
   })
@@ -38,7 +38,7 @@ export const updateCommunity = (id, data) => {
 // 删除小区
 export const deleteCommunity = (id) => {
   return request({
-    url: `/communities/${id}`,
+    url: `/api/v1/communities/${id}`,
     method: 'delete'
   })
 }

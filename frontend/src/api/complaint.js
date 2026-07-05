@@ -3,7 +3,7 @@ import request from '@/utils/request'
 // 查询投诉列表
 export const getComplaintList = (params) => {
   return request({
-    url: '/complaints',
+    url: '/api/v1/complaints',
     method: 'get',
     params
   })
@@ -12,7 +12,7 @@ export const getComplaintList = (params) => {
 // 根据ID查询投诉
 export const getComplaintById = (id) => {
   return request({
-    url: `/complaints/${id}`,
+    url: `/api/v1/complaints/${id}`,
     method: 'get'
   })
 }
@@ -20,7 +20,7 @@ export const getComplaintById = (id) => {
 // 新增投诉
 export const createComplaint = (data) => {
   return request({
-    url: '/complaints',
+    url: '/api/v1/complaints',
     method: 'post',
     data
   })
@@ -29,7 +29,7 @@ export const createComplaint = (data) => {
 // 修改投诉
 export const updateComplaint = (id, data) => {
   return request({
-    url: `/complaints/${id}`,
+    url: `/api/v1/complaints/${id}`,
     method: 'put',
     data
   })
@@ -38,7 +38,7 @@ export const updateComplaint = (id, data) => {
 // 删除投诉
 export const deleteComplaint = (id) => {
   return request({
-    url: `/complaints/${id}`,
+    url: `/api/v1/complaints/${id}`,
     method: 'delete'
   })
 }
@@ -46,7 +46,7 @@ export const deleteComplaint = (id) => {
 // 回复投诉
 export const replyComplaint = (id, data) => {
   return request({
-    url: `/complaints/${id}/reply`,
+    url: `/api/v1/complaints/${id}/reply`,
     method: 'put',
     data
   })

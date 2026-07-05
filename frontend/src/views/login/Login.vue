@@ -1,3 +1,4 @@
+
 <template>
   <div class="login-container">
     <div class="login-box">
@@ -37,8 +38,12 @@
           </el-button>
         </el-form-item>
         
-        <div style="text-align: center; font-size: 12px; color: #999;">
-          默认账号: admin / 密码: 123456
+
+=======
+        <div class="register-link">
+          <span>还没有账户？</span>
+          <a href="/register">立即注册</a>
+>>>>>>> e687003f3e2ac66486cef13d634578d32c90396a
         </div>
       </el-form>
     </div>
@@ -152,5 +157,22 @@ const handleLogin = async () => {
   width: 100%;
   height: 44px;
   font-size: 16px;
+}
+
+.register-link {
+  text-align: center;
+  margin-top: 20px;
+  color: #666;
+  font-size: 14px;
+}
+
+.register-link a {
+  color: #409EFF;
+  text-decoration: none;
+  margin-left: 5px;
+}
+
+.register-link a:hover {
+  text-decoration: underline;
 }
 </style>

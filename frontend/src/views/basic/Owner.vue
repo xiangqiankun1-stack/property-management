@@ -4,37 +4,59 @@
     <el-card class="search-card">
       <el-form :model="searchForm" inline>
         <el-form-item label="业主姓名">
-          <el-input v-model="searchForm.ownerName" placeholder="请输入业主姓名" />
+          <el-input v-model="searchForm.ownerName" placeholder="请输入业主姓名" clearable />
         </el-form-item>
-        <el-form-item label="联系电话">
-          <el-input v-model="searchForm.phoneNumber" placeholder="请输入联系电话" />
-        </el-form-item>
-        <el-form-item label="所属小区">
-          <el-select v-model="searchForm.communityId" placeholder="请选择小区">
+       <!--  <el-form-item label="联系电话">
+          <el-input v-model="searchForm.phoneNumber" placeholder="请输入联系电话" clearable />
+        </el-form-item> -->
+        <el-form-item label="与房屋关系">
+          <el-select v-model="searchForm.relationship" placeholder="请选择关系" clearable>
             <el-option label="全部" value="" />
-            <el-option 
-              v-for="item in communityList" 
-              :key="item.id" 
-              :label="item.communityName" 
-              :value="item.id" 
-            />
+            <el-option label="业主" value="业主" />
+            <el-option label="配偶" value="配偶" />
+            <el-option label="子女" value="子女" />
+            <el-option label="父母" value="父母" />
+            <el-option label="租户" value="租户" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="状态">
+          <el-select v-model="searchForm.status" placeholder="请选择状态" clearable>
+            <el-option label="全部" value="" />
+            <el-option label="正常" :value="1" />
+            <el-option label="已迁出" :value="0" />
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleSearch">搜索</el-button>
-          <el-button @click="handleReset">重置</el-button>
+          <el-button type="primary" @click="handleSearch">
+            <el-icon><Search /></el-icon>
+            搜索
+          </el-button>
+          <el-button @click="handleReset">
+            <el-icon><RefreshLeft /></el-icon>
+            重置
+          </el-button>
         </el-form-item>
       </el-form>
       <el-button type="primary" @click="openDialog('add')" class="add-btn">
-        <el-icon>新增业主</el-icon>
-        
+        <el-icon><Plus /></el-icon>
+        新增业主
       </el-button>
     </el-card>
 
     <!-- 数据表格 -->
     <el-card class="table-card">
+      <div class="table-header">
+        <div class="summary-info">
+          <span>共 <strong>{{ pagination.total }}</strong> 条记录</span>
+          <span class="divider">|</span>
+          <span>正常: <strong>{{ normalCount }}</strong> 条</span>
+          <span class="divider">|</span>
+          <span>已迁出: <strong>{{ movedOutCount }}</strong> 条</span>
+        </div>
+      </div>
+      
       <el-table 
-        :data="tableData" 
+        :data="displayData" 
         border
         stripe
         :loading="loading"
@@ -42,13 +64,15 @@
       >
         <el-table-column prop="id" label="ID" width="80" align="center"/>
         <el-table-column prop="ownerName" label="业主姓名"/>
+        <el-table-column prop="gender" label="性别" width="80" align="center">
+          <template #default="scope">
+            {{ scope.row.gender === 1 ? '男' : '女' }}
+          </template>
+        </el-table-column>
         <el-table-column prop="phoneNumber" label="联系电话"/>
-        <el-table-column prop="idCardNumber" label="身份证号"/>
-        <el-table-column prop="communityName" label="所属小区"/>
-        <el-table-column prop="buildingName" label="所属楼栋"/>
+        <el-table-column prop="idCard" label="身份证号"/>
         <el-table-column prop="houseNumber" label="房号"/>
-        <el-table-column prop="relation" label="与房屋关系" width="120"/>
-        <el-table-column prop="moveInDate" label="入住日期" width="120"/>
+        <el-table-column prop="relationship" label="与房屋关系" width="120"/>
         <el-table-column prop="status" label="状态" width="100" align="center">
           <template #default="scope">
             <el-tag :type="scope.row.status === 1 ? 'success' : 'danger'">
@@ -57,22 +81,15 @@
           </template>
         </el-table-column>
         <el-table-column prop="createTime" label="创建时间" width="180"/>
-        <el-table-column label="操作" width="200" align="center">
+        <el-table-column label="操作" width="150" align="center">
           <template #default="scope">
-            <el-button 
-              size="small" 
-              @click="openDialog('edit', scope.row)"
-            >
-              <el-icon>编辑</el-icon>
-              
+            <el-button size="small" @click="openDialog('edit', scope.row)">
+              <el-icon><Edit /></el-icon>
+              编辑
             </el-button>
-            <el-button 
-              size="small" 
-              type="danger"
-              @click="handleDelete(scope.row.id)"
-            >
-              <el-icon>删除</el-icon>
-              
+            <el-button size="small" type="danger" @click="handleDelete(scope.row.id)">
+              <el-icon><Delete /></el-icon>
+              删除
             </el-button>
           </template>
         </el-table-column>
@@ -107,62 +124,32 @@
         <el-form-item label="业主姓名" prop="ownerName">
           <el-input v-model="form.ownerName" placeholder="请输入业主姓名" />
         </el-form-item>
+        <el-form-item label="性别" prop="gender">
+          <el-select v-model="form.gender" placeholder="请选择性别">
+            <el-option label="男" :value="1" />
+            <el-option label="女" :value="2" />
+          </el-select>
+        </el-form-item>
         <el-form-item label="联系电话" prop="phoneNumber">
           <el-input v-model="form.phoneNumber" placeholder="请输入联系电话" />
         </el-form-item>
         <el-form-item label="身份证号">
-          <el-input v-model="form.idCardNumber" placeholder="请输入身份证号" />
-        </el-form-item>
-        <el-form-item label="所属小区">
-          <el-select 
-            v-model="form.communityId" 
-            placeholder="请选择小区"
-            @change="handleCommunityChange"
-          >
-            <el-option 
-              v-for="item in communityList" 
-              :key="item.id" 
-              :label="item.communityName" 
-              :value="item.id" 
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="所属楼栋" prop="buildingId">
-          <el-select 
-            v-model="form.buildingId" 
-            placeholder="请选择楼栋"
-            @change="handleBuildingChange"
-          >
-            <el-option 
-              v-for="item in filteredBuildings" 
-              :key="item.id" 
-              :label="item.buildingName" 
-              :value="item.id" 
-            />
-          </el-select>
+          <el-input v-model="form.idCard" placeholder="请输入身份证号" />
         </el-form-item>
         <el-form-item label="房号" prop="houseId">
           <el-select v-model="form.houseId" placeholder="请选择房号">
-            <el-option 
-              v-for="item in filteredHouses" 
-              :key="item.id" 
-              :label="item.houseNumber" 
-              :value="item.id" 
-            />
+            <el-option v-for="item in filteredHouses" :key="item.id" :label="item.houseNumber" :value="item.id" />
           </el-select>
         </el-form-item>
         <el-form-item label="与房屋关系">
-          <el-select v-model="form.relation" placeholder="请选择关系">
-            <el-option label="业主" :value="'业主'" />
-            <el-option label="配偶" :value="'配偶'" />
-            <el-option label="子女" :value="'子女'" />
-            <el-option label="父母" :value="'父母'" />
-            <el-option label="租户" :value="'租户'" />
-            <el-option label="其他" :value="'其他'" />
+          <el-select v-model="form.relationship" placeholder="请选择关系">
+            <el-option label="业主" value="业主" />
+            <el-option label="配偶" value="配偶" />
+            <el-option label="子女" value="子女" />
+            <el-option label="父母" value="父母" />
+            <el-option label="租户" value="租户" />
+            <el-option label="其他" value="其他" />
           </el-select>
-        </el-form-item>
-        <el-form-item label="入住日期">
-          <el-date-picker v-model="form.moveInDate" type="date" placeholder="请选择入住日期" />
         </el-form-item>
         <el-form-item label="状态">
           <el-switch v-model="form.status" :active-value="1" :inactive-value="0" />
@@ -176,27 +163,16 @@
         <el-button type="primary" @click="handleSubmit">确定</el-button>
       </template>
     </el-dialog>
-
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import {
-  getOwnerList,
-  createOwner,
-  updateOwner,
-  deleteOwner
-} from '@/api/owner'
-import { getCommunityList } from '@/api/community'
-import { getBuildingList } from '@/api/building'
+import { Search, RefreshLeft, Plus, Edit, Delete } from '@element-plus/icons-vue'
+import { getOwnerList, createOwner, updateOwner, deleteOwner } from '@/api/owner'
 import { getHouseList } from '@/api/house'
 
-// 小区列表
-const communityList = ref([])
-// 楼栋列表
-const buildingList = ref([])
 // 房屋列表
 const houseList = ref([])
 
@@ -204,10 +180,12 @@ const houseList = ref([])
 const searchForm = reactive({
   ownerName: '',
   phoneNumber: '',
-  communityId: ''
+  relationship: '',
+  status: ''
 })
 
 // 表格数据
+const allData = ref([])
 const tableData = ref([])
 const loading = ref(false)
 
@@ -225,96 +203,88 @@ const formRef = ref(null)
 const form = reactive({
   id: '',
   ownerName: '',
+  gender: 1,
   phoneNumber: '',
-  idCardNumber: '',
-  communityId: '',
-  buildingId: '',
+  idCard: '',
   houseId: '',
-  relation: '业主',
-  moveInDate: '',
+  relationship: '业主',
   status: 1,
   remark: ''
 })
 
 // 表单验证规则
 const rules = {
-  ownerName: [
-    { required: true, message: '请输入业主姓名', trigger: 'blur' }
-  ],
-  phoneNumber: [
-    { required: true, message: '请输入联系电话', trigger: 'blur' },
-    { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号码', trigger: 'blur' }
-  ],
-  communityId: [
-    { required: true, message: '请选择所属小区', trigger: 'blur' }
-  ],
-  buildingId: [
-    { required: true, message: '请选择所属楼栋', trigger: 'blur' }
-  ],
-  houseId: [
-    { required: true, message: '请选择房号', trigger: 'blur' }
-  ]
+  ownerName: [{ required: true, message: '请输入业主姓名', trigger: 'blur' }],
+  gender: [{ required: true, message: '请选择性别', trigger: 'blur' }],
+  phoneNumber: [{ required: true, message: '请输入联系电话', trigger: 'blur' }],
+  houseId: [{ required: true, message: '请选择房号', trigger: 'blur' }]
 }
 
 // 弹窗标题
-const dialogTitle = computed(() => {
-  return dialogType.value === 'add' ? '新增业主' : '编辑业主'
-})
-
-// 根据小区过滤楼栋
-const filteredBuildings = computed(() => {
-  if (!form.communityId) return []
-  return buildingList.value.filter(b => b.communityId === form.communityId)
-})
+const dialogTitle = computed(() => dialogType.value === 'add' ? '新增业主' : '编辑业主')
 
 // 根据楼栋过滤房屋
-const filteredHouses = computed(() => {
-  if (!form.buildingId) return []
-  return houseList.value.filter(h => h.buildingId === form.buildingId)
+const filteredHouses = computed(() => houseList.value)
+
+// 计算统计信息
+const normalCount = computed(() => {
+  return tableData.value.filter(item => item.status === 1).length
 })
 
-// 加载小区列表
-const loadCommunityList = async () => {
-  try {
-    const res = await getCommunityList()
-    if (Array.isArray(res)) {
-      communityList.value = res
-    } else {
-      communityList.value = [
-        { id: 1, communityName: '阳光小区' },
-        { id: 2, communityName: '幸福花园' },
-        { id: 3, communityName: '和谐家园' }
-      ]
-    }
-  } catch (error) {
-    communityList.value = [
-      { id: 1, communityName: '阳光小区' },
-      { id: 2, communityName: '幸福花园' },
-      { id: 3, communityName: '和谐家园' }
-    ]
+const movedOutCount = computed(() => {
+  return tableData.value.filter(item => item.status === 0).length
+})
+
+// 当前页显示的数据
+const displayData = computed(() => {
+  const start = (pagination.currentPage - 1) * pagination.pageSize
+  const end = start + pagination.pageSize
+  return tableData.value.slice(start, end)
+})
+
+// 前端搜索过滤
+const filterData = () => {
+  let filtered = [...allData.value]
+  
+  if (searchForm.ownerName) {
+    filtered = filtered.filter(item => 
+      item.ownerName.toLowerCase().includes(searchForm.ownerName.toLowerCase())
+    )
   }
+  
+  if (searchForm.phoneNumber) {
+    filtered = filtered.filter(item => 
+      item.phoneNumber.includes(searchForm.phoneNumber)
+    )
+  }
+  
+  if (searchForm.relationship) {
+    filtered = filtered.filter(item => 
+      item.relationship === searchForm.relationship
+    )
+  }
+  
+  if (searchForm.status !== '') {
+    filtered = filtered.filter(item => 
+      item.status === searchForm.status
+    )
+  }
+  
+  return filtered
 }
 
-// 加载楼栋列表
-const loadBuildingList = async () => {
-  try {
-    const res = await getBuildingList()
-    if (Array.isArray(res)) {
-      buildingList.value = res
-    } else {
-      buildingList.value = [
-        { id: 1, communityId: 1, buildingName: '1号楼' },
-        { id: 2, communityId: 1, buildingName: '2号楼' },
-        { id: 3, communityId: 2, buildingName: 'A栋' }
-      ]
+// 更新表格数据
+const updateTableData = () => {
+  const filtered = filterData()
+  tableData.value = filtered.map(item => {
+    const house = houseList.value.find(h => h.id === item.houseId)
+    return {
+      ...item,
+      houseNumber: house ? house.houseNumber : '未知房号'
     }
-  } catch (error) {
-    buildingList.value = [
-      { id: 1, communityId: 1, buildingName: '1号楼' },
-      { id: 2, communityId: 1, buildingName: '2号楼' },
-      { id: 3, communityId: 2, buildingName: 'A栋' }
-    ]
-  }
+  })
+  pagination.total = tableData.value.length
+  pagination.currentPage = 1
 }
 
 // 加载房屋列表
@@ -325,76 +295,49 @@ const loadHouseList = async () => {
       houseList.value = res
     } else {
       houseList.value = [
-        { id: 1, communityId: 1, buildingId: 1, houseNumber: '101' },
-        { id: 2, communityId: 1, buildingId: 1, houseNumber: '102' },
-        { id: 3, communityId: 1, buildingId: 1, houseNumber: '201' },
-        { id: 4, communityId: 2, buildingId: 3, houseNumber: '301' }
+        { id: 1, houseNumber: '1号楼101' },
+        { id: 2, houseNumber: '1号楼102' },
+        { id: 3, houseNumber: '2号楼201' },
+        { id: 4, houseNumber: 'A栋301' }
       ]
     }
   } catch (error) {
     houseList.value = [
-      { id: 1, communityId: 1, buildingId: 1, houseNumber: '101' },
-      { id: 2, communityId: 1, buildingId: 1, houseNumber: '102' },
-      { id: 3, communityId: 1, buildingId: 1, houseNumber: '201' },
-      { id: 4, communityId: 2, buildingId: 3, houseNumber: '301' }
+      { id: 1, houseNumber: '1号楼101' },
+      { id: 2, houseNumber: '1号楼102' },
+      { id: 3, houseNumber: '2号楼201' },
+      { id: 4, houseNumber: 'A栋301' }
     ]
   }
-}
-
-// 小区改变时重置楼栋和房屋
-const handleCommunityChange = () => {
-  form.buildingId = ''
-  form.houseId = ''
-}
-
-// 楼栋改变时重置房屋
-const handleBuildingChange = () => {
-  form.houseId = ''
 }
 
 // 加载业主数据
 const loadData = async () => {
   loading.value = true
   try {
-    const params = {
-      page: pagination.currentPage,
-      size: pagination.pageSize,
-      ...searchForm
-    }
-    const res = await getOwnerList(params)
-    // 后端返回的是数组，直接使用
+    const res = await getOwnerList()
+    
     if (Array.isArray(res) && res.length > 0) {
-      // 补充小区、楼栋、房屋信息
-      tableData.value = res.map(item => {
-        const house = houseList.value.find(h => h.id === item.houseId)
-        const building = house ? buildingList.value.find(b => b.id === house.buildingId) : null
-        const community = building ? communityList.value.find(c => c.id === building.communityId) : null
-        return {
-          ...item,
-          communityName: community ? community.communityName : '未知小区',
-          buildingName: building ? building.buildingName : '未知楼栋',
-          houseNumber: house ? house.houseNumber : '未知房号'
-        }
-      })
-      pagination.total = res.length
+      allData.value = res
     } else {
-      // 使用模拟数据
-      tableData.value = [
-        { id: 1, ownerName: '张三', phoneNumber: '13800138001', idCardNumber: '110101199001011234', communityId: 1, buildingId: 1, houseId: 1, communityName: '阳光小区', buildingName: '1号楼', houseNumber: '101', relation: '业主', moveInDate: '2026-01-01', status: 1, createTime: '2026-01-01T09:00:00' },
-        { id: 2, ownerName: '李四', phoneNumber: '13900139002', idCardNumber: '110101199202022345', communityId: 1, buildingId: 1, houseId: 2, communityName: '阳光小区', buildingName: '1号楼', houseNumber: '102', relation: '业主', moveInDate: '2026-01-05', status: 1, createTime: '2026-01-05T10:00:00' },
-        { id: 3, ownerName: '王五', phoneNumber: '13700137003', idCardNumber: '110101198803033456', communityId: 2, buildingId: 3, houseId: 4, communityName: '幸福花园', buildingName: 'A栋', houseNumber: '301', relation: '租户', moveInDate: '2026-02-01', status: 1, createTime: '2026-02-01T11:00:00' }
+      allData.value = [
+        { id: 1, ownerName: '刘建国', gender: 1, phoneNumber: '13900000001', idCard: '310101198001011234', houseId: 1, relationship: '业主', status: 1, createTime: '2026-01-02T10:00:00' },
+        { id: 2, ownerName: '陈美丽', gender: 2, phoneNumber: '13900000002', idCard: '310101198505052345', houseId: 2, relationship: '业主', status: 1, createTime: '2026-01-02T10:10:00' },
+        { id: 3, ownerName: '赵小龙', gender: 1, phoneNumber: '13900000003', idCard: '310101199212123456', houseId: 3, relationship: '租户', status: 1, createTime: '2026-01-02T10:20:00' },
+        { id: 4, ownerName: '王大爷', gender: 1, phoneNumber: '13900000004', idCard: '310101195003034567', houseId: 4, relationship: '业主', status: 0, createTime: '2026-01-02T10:30:00' }
       ]
-      pagination.total = tableData.value.length
     }
+    
+    updateTableData()
   } catch (error) {
     console.error('加载业主列表失败:', error)
-    // 使用模拟数据
-    tableData.value = [
-      { id: 1, ownerName: '张三', phoneNumber: '13800138001', idCardNumber: '110101199001011234', communityId: 1, buildingId: 1, houseId: 1, communityName: '阳光小区', buildingName: '1号楼', houseNumber: '101', relation: '业主', moveInDate: '2026-01-01', status: 1, createTime: '2026-01-01T09:00:00' },
-      { id: 2, ownerName: '李四', phoneNumber: '13900139002', idCardNumber: '110101199202022345', communityId: 1, buildingId: 1, houseId: 2, communityName: '阳光小区', buildingName: '1号楼', houseNumber: '102', relation: '业主', moveInDate: '2026-01-05', status: 1, createTime: '2026-01-05T10:00:00' },
-      { id: 3, ownerName: '王五', phoneNumber: '13700137003', idCardNumber: '110101198803033456', communityId: 2, buildingId: 3, houseId: 4, communityName: '幸福花园', buildingName: 'A栋', houseNumber: '301', relation: '租户', moveInDate: '2026-02-01', status: 1, createTime: '2026-02-01T11:00:00' }
+    allData.value = [
+      { id: 1, ownerName: '刘建国', gender: 1, phoneNumber: '13900000001', idCard: '310101198001011234', houseId: 1, relationship: '业主', status: 1, createTime: '2026-01-02T10:00:00' },
+      { id: 2, ownerName: '陈美丽', gender: 2, phoneNumber: '13900000002', idCard: '310101198505052345', houseId: 2, relationship: '业主', status: 1, createTime: '2026-01-02T10:10:00' },
+      { id: 3, ownerName: '赵小龙', gender: 1, phoneNumber: '13900000003', idCard: '310101199212123456', houseId: 3, relationship: '租户', status: 1, createTime: '2026-01-02T10:20:00' },
+      { id: 4, ownerName: '王大爷', gender: 1, phoneNumber: '13900000004', idCard: '310101195003034567', houseId: 4, relationship: '业主', status: 0, createTime: '2026-01-02T10:30:00' }
     ]
-    pagination.total = tableData.value.length
+    updateTableData()
   } finally {
     loading.value = false
   }
@@ -402,66 +345,37 @@ const loadData = async () => {
 
 // 搜索
 const handleSearch = () => {
-  pagination.currentPage = 1
-  loadData()
+  updateTableData()
 }
 
 // 重置
 const handleReset = () => {
   searchForm.ownerName = ''
   searchForm.phoneNumber = ''
-  searchForm.communityId = ''
-  handleSearch()
+  searchForm.relationship = ''
+  searchForm.status = ''
+  updateTableData()
 }
 
 // 打开弹窗
 const openDialog = (type, row = null) => {
   dialogType.value = type
   dialogVisible.value = true
-  
-  // 重置表单
-  if (formRef.value) {
-    formRef.value.resetFields()
-  }
+  if (formRef.value) formRef.value.resetFields()
   
   if (type === 'add') {
-    form.id = ''
-    form.ownerName = ''
-    form.phoneNumber = ''
-    form.idCardNumber = ''
-    form.communityId = ''
-    form.buildingId = ''
-    form.houseId = ''
-    form.relation = '业主'
-    form.moveInDate = ''
-    form.status = 1
-    form.remark = ''
+    Object.assign(form, { id: '', ownerName: '', gender: 1, phoneNumber: '', idCard: '', houseId: '', relationship: '业主', status: 1, remark: '' })
   } else if (type === 'edit' && row) {
-    form.id = row.id
-    form.ownerName = row.ownerName
-    form.phoneNumber = row.phoneNumber
-    form.idCardNumber = row.idCardNumber
-    form.communityId = row.communityId
-    form.buildingId = row.buildingId
-    form.houseId = row.houseId
-    form.relation = row.relation
-    form.moveInDate = row.moveInDate
-    form.status = row.status
-    form.remark = row.remark
+    Object.assign(form, row)
   }
 }
 
 // 关闭弹窗
-const handleDialogClose = () => {
-  if (formRef.value) {
-    formRef.value.resetFields()
-  }
-}
+const handleDialogClose = () => { if (formRef.value) formRef.value.resetFields() }
 
 // 提交表单
 const handleSubmit = async () => {
   if (!formRef.value) return
-  
   const valid = await formRef.value.validate()
   if (!valid) return
   
@@ -483,60 +397,73 @@ const handleSubmit = async () => {
 // 删除
 const handleDelete = async (id) => {
   try {
-    await ElMessageBox.confirm(
-      '确定要删除该业主吗？',
-      '提示',
-      {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }
-    )
+    await ElMessageBox.confirm('确定要删除该业主吗？', '提示', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' })
     await deleteOwner(id)
     ElMessage.success('删除成功')
     loadData()
   } catch (error) {
-    if (error !== 'cancel') {
-      ElMessage.error('删除失败')
-    }
+    if (error !== 'cancel') ElMessage.error('删除失败')
   }
 }
 
 // 分页大小改变
 const handleSizeChange = (size) => {
   pagination.pageSize = size
-  loadData()
+  if (pagination.currentPage > Math.ceil(pagination.total / size)) {
+    pagination.currentPage = 1
+  }
 }
 
 // 当前页改变
 const handleCurrentChange = (page) => {
   pagination.currentPage = page
-  loadData()
 }
 
 // 初始化
 onMounted(() => {
-  loadCommunityList()
-  loadBuildingList()
   loadHouseList()
   loadData()
 })
 </script>
 
 <style scoped>
-.owner-container {
-  padding: 20px;
-}
-
-.search-card {
-  margin-bottom: 20px;
+.owner-container { padding: 20px; }
+.search-card { 
+  margin-bottom: 20px; 
+  position: relative;
 }
 
 .add-btn {
-  float: right;
+  position: absolute;
+  right: 20px;
+  top: 15px;
+  padding: 8px 16px;
+  font-size: 14px;
 }
 
-.table-card {
-  min-height: 400px;
+.table-card { 
+  min-height: 400px; 
+}
+
+.table-header {
+  margin-bottom: 15px;
+  padding: 10px 15px;
+  background: #fafafa;
+  border-radius: 4px;
+}
+
+.summary-info {
+  font-size: 14px;
+  color: #666;
+}
+
+.summary-info strong {
+  color: #409EFF;
+  margin: 0 2px;
+}
+
+.divider {
+  margin: 0 10px;
+  color: #ddd;
 }
 </style>

@@ -4,10 +4,10 @@
     <el-card class="search-card">
       <el-form :model="searchForm" inline>
         <el-form-item label="楼栋名称">
-          <el-input v-model="searchForm.buildingName" placeholder="请输入楼栋名称" />
+          <el-input v-model="searchForm.buildingName" placeholder="请输入楼栋名称" clearable />
         </el-form-item>
         <el-form-item label="所属小区">
-          <el-select v-model="searchForm.communityId" placeholder="请选择小区">
+          <el-select v-model="searchForm.communityId" placeholder="请选择小区" clearable>
             <el-option label="全部" value="" />
             <el-option 
               v-for="item in communityList" 
@@ -17,21 +17,44 @@
             />
           </el-select>
         </el-form-item>
+        <el-form-item label="状态">
+          <el-select v-model="searchForm.status" placeholder="请选择状态" clearable>
+            <el-option label="全部" value="" />
+            <el-option label="正常" :value="1" />
+            <el-option label="停用" :value="0" />
+          </el-select>
+        </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleSearch">搜索</el-button>
-          <el-button @click="handleReset">重置</el-button>
+          <el-button type="primary" @click="handleSearch">
+            <el-icon><Search /></el-icon>
+            搜索
+          </el-button>
+          <el-button @click="handleReset">
+            <el-icon><RefreshLeft /></el-icon>
+            重置
+          </el-button>
         </el-form-item>
       </el-form>
       <el-button type="primary" @click="openDialog('add')" class="add-btn">
-        <el-icon>新增楼栋</el-icon>
-        
+        <el-icon><Plus /></el-icon>
+        新增楼栋
       </el-button>
     </el-card>
 
     <!-- 数据表格 -->
     <el-card class="table-card">
+      <div class="table-header">
+        <div class="summary-info">
+          <span>共 <strong>{{ pagination.total }}</strong> 条记录</span>
+          <span class="divider">|</span>
+          <span>正常: <strong>{{ normalCount }}</strong> 条</span>
+          <span class="divider">|</span>
+          <span>停用: <strong>{{ disabledCount }}</strong> 条</span>
+        </div>
+      </div>
+      
       <el-table 
-        :data="tableData" 
+        :data="displayData" 
         border
         stripe
         :loading="loading"
@@ -50,22 +73,22 @@
           </template>
         </el-table-column>
         <el-table-column prop="createTime" label="创建时间" width="180"/>
-        <el-table-column label="操作" width="200" align="center">
+        <el-table-column label="操作" width="150" align="center">
           <template #default="scope">
             <el-button 
               size="small" 
               @click="openDialog('edit', scope.row)"
             >
-              <el-icon>编辑</el-icon>
-              
+              <el-icon><Edit /></el-icon>
+              编辑
             </el-button>
             <el-button 
               size="small" 
               type="danger"
               @click="handleDelete(scope.row.id)"
             >
-              <el-icon>删除</el-icon>
-              
+              <el-icon><Delete /></el-icon>
+              删除
             </el-button>
           </template>
         </el-table-column>
@@ -135,6 +158,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { Search, RefreshLeft, Plus, Edit, Delete } from '@element-plus/icons-vue'
 import {
   getBuildingList,
   createBuilding,
@@ -149,10 +173,12 @@ const communityList = ref([])
 // 搜索表单
 const searchForm = reactive({
   buildingName: '',
-  communityId: ''
+  communityId: '',
+  status: ''
 })
 
 // 表格数据
+const allData = ref([])
 const tableData = ref([])
 const loading = ref(false)
 
@@ -200,6 +226,61 @@ const dialogTitle = computed(() => {
   return dialogType.value === 'add' ? '新增楼栋' : '编辑楼栋'
 })
 
+// 计算统计信息
+const normalCount = computed(() => {
+  return tableData.value.filter(item => item.status === 1).length
+})
+
+const disabledCount = computed(() => {
+  return tableData.value.filter(item => item.status === 0).length
+})
+
+// 当前页显示的数据
+const displayData = computed(() => {
+  const start = (pagination.currentPage - 1) * pagination.pageSize
+  const end = start + pagination.pageSize
+  return tableData.value.slice(start, end)
+})
+
+// 前端搜索过滤
+const filterData = () => {
+  let filtered = [...allData.value]
+  
+  if (searchForm.buildingName) {
+    filtered = filtered.filter(item => 
+      item.buildingName.toLowerCase().includes(searchForm.buildingName.toLowerCase())
+    )
+  }
+  
+  if (searchForm.communityId !== '') {
+    filtered = filtered.filter(item => 
+      item.communityId === searchForm.communityId
+    )
+  }
+  
+  if (searchForm.status !== '') {
+    filtered = filtered.filter(item => 
+      item.status === searchForm.status
+    )
+  }
+  
+  return filtered
+}
+
+// 更新表格数据
+const updateTableData = () => {
+  const filtered = filterData()
+  tableData.value = filtered.map(item => {
+    const community = communityList.value.find(c => c.id === item.communityId)
+    return {
+      ...item,
+      communityName: community ? community.communityName : '未知小区'
+    }
+  })
+  pagination.total = tableData.value.length
+  pagination.currentPage = 1
+}
+
 // 加载小区列表
 const loadCommunityList = async () => {
   try {
@@ -207,7 +288,6 @@ const loadCommunityList = async () => {
     if (Array.isArray(res)) {
       communityList.value = res
     } else {
-      // 模拟数据
       communityList.value = [
         { id: 1, communityName: '阳光小区' },
         { id: 2, communityName: '幸福花园' },
@@ -215,7 +295,6 @@ const loadCommunityList = async () => {
       ]
     }
   } catch (error) {
-    console.error('加载小区列表失败:', error)
     communityList.value = [
       { id: 1, communityName: '阳光小区' },
       { id: 2, communityName: '幸福花园' },
@@ -228,41 +307,29 @@ const loadCommunityList = async () => {
 const loadData = async () => {
   loading.value = true
   try {
-    const params = {
-      page: pagination.currentPage,
-      size: pagination.pageSize,
-      ...searchForm
-    }
-    const res = await getBuildingList(params)
-    // 后端返回的是数组，直接使用
+    const res = await getBuildingList()
+    
     if (Array.isArray(res) && res.length > 0) {
-      // 补充小区名称
-      tableData.value = res.map(item => {
-        const community = communityList.value.find(c => c.id === item.communityId)
-        return {
-          ...item,
-          communityName: community ? community.communityName : '未知小区'
-        }
-      })
-      pagination.total = res.length
+      allData.value = res
     } else {
-      // 使用模拟数据
-      tableData.value = [
-        { id: 1, communityId: 1, communityName: '阳光小区', buildingName: '1号楼', totalFloors: 18, unitsPerFloor: 4, status: 1, createTime: '2026-01-01T09:00:00' },
-        { id: 2, communityId: 1, communityName: '阳光小区', buildingName: '2号楼', totalFloors: 18, unitsPerFloor: 4, status: 1, createTime: '2026-01-01T09:00:00' },
-        { id: 3, communityId: 2, communityName: '幸福花园', buildingName: 'A栋', totalFloors: 24, unitsPerFloor: 6, status: 1, createTime: '2026-01-02T10:00:00' }
+      allData.value = [
+        { id: 1, communityId: 1, buildingName: '1号楼', totalFloors: 18, unitsPerFloor: 4, status: 1, createTime: '2026-01-01T09:00:00' },
+        { id: 2, communityId: 1, buildingName: '2号楼', totalFloors: 18, unitsPerFloor: 4, status: 1, createTime: '2026-01-01T09:00:00' },
+        { id: 3, communityId: 2, buildingName: 'A栋', totalFloors: 24, unitsPerFloor: 6, status: 1, createTime: '2026-01-02T10:00:00' },
+        { id: 4, communityId: 2, buildingName: 'B栋', totalFloors: 24, unitsPerFloor: 6, status: 0, createTime: '2026-01-02T10:00:00' }
       ]
-      pagination.total = tableData.value.length
     }
+    
+    updateTableData()
   } catch (error) {
     console.error('加载楼栋列表失败:', error)
-    // 使用模拟数据
-    tableData.value = [
-      { id: 1, communityId: 1, communityName: '阳光小区', buildingName: '1号楼', totalFloors: 18, unitsPerFloor: 4, status: 1, createTime: '2026-01-01T09:00:00' },
-      { id: 2, communityId: 1, communityName: '阳光小区', buildingName: '2号楼', totalFloors: 18, unitsPerFloor: 4, status: 1, createTime: '2026-01-01T09:00:00' },
-      { id: 3, communityId: 2, communityName: '幸福花园', buildingName: 'A栋', totalFloors: 24, unitsPerFloor: 6, status: 1, createTime: '2026-01-02T10:00:00' }
+    allData.value = [
+      { id: 1, communityId: 1, buildingName: '1号楼', totalFloors: 18, unitsPerFloor: 4, status: 1, createTime: '2026-01-01T09:00:00' },
+      { id: 2, communityId: 1, buildingName: '2号楼', totalFloors: 18, unitsPerFloor: 4, status: 1, createTime: '2026-01-01T09:00:00' },
+      { id: 3, communityId: 2, buildingName: 'A栋', totalFloors: 24, unitsPerFloor: 6, status: 1, createTime: '2026-01-02T10:00:00' },
+      { id: 4, communityId: 2, buildingName: 'B栋', totalFloors: 24, unitsPerFloor: 6, status: 0, createTime: '2026-01-02T10:00:00' }
     ]
-    pagination.total = tableData.value.length
+    updateTableData()
   } finally {
     loading.value = false
   }
@@ -270,15 +337,15 @@ const loadData = async () => {
 
 // 搜索
 const handleSearch = () => {
-  pagination.currentPage = 1
-  loadData()
+  updateTableData()
 }
 
 // 重置
 const handleReset = () => {
   searchForm.buildingName = ''
   searchForm.communityId = ''
-  handleSearch()
+  searchForm.status = ''
+  updateTableData()
 }
 
 // 打开弹窗
@@ -286,27 +353,14 @@ const openDialog = (type, row = null) => {
   dialogType.value = type
   dialogVisible.value = true
   
-  // 重置表单
   if (formRef.value) {
     formRef.value.resetFields()
   }
   
   if (type === 'add') {
-    form.id = ''
-    form.communityId = ''
-    form.buildingName = ''
-    form.totalFloors = ''
-    form.unitsPerFloor = ''
-    form.status = 1
-    form.description = ''
+    Object.assign(form, { id: '', communityId: '', buildingName: '', totalFloors: '', unitsPerFloor: '', status: 1, description: '' })
   } else if (type === 'edit' && row) {
-    form.id = row.id
-    form.communityId = row.communityId
-    form.buildingName = row.buildingName
-    form.totalFloors = row.totalFloors
-    form.unitsPerFloor = row.unitsPerFloor
-    form.status = row.status
-    form.description = row.description
+    Object.assign(form, { id: row.id, communityId: row.communityId, buildingName: row.buildingName, totalFloors: row.totalFloors, unitsPerFloor: row.unitsPerFloor, status: row.status, description: row.description })
   }
 }
 
@@ -364,13 +418,14 @@ const handleDelete = async (id) => {
 // 分页大小改变
 const handleSizeChange = (size) => {
   pagination.pageSize = size
-  loadData()
+  if (pagination.currentPage > Math.ceil(pagination.total / size)) {
+    pagination.currentPage = 1
+  }
 }
 
 // 当前页改变
 const handleCurrentChange = (page) => {
   pagination.currentPage = page
-  loadData()
 }
 
 // 初始化
@@ -385,15 +440,42 @@ onMounted(() => {
   padding: 20px;
 }
 
-.search-card {
-  margin-bottom: 20px;
+.search-card { 
+  margin-bottom: 20px; 
+  position: relative;
 }
 
 .add-btn {
-  float: right;
+  position: absolute;
+  right: 20px;
+  top: 15px;
+  padding: 8px 16px;
+  font-size: 14px;
 }
 
 .table-card {
   min-height: 400px;
+}
+
+.table-header {
+  margin-bottom: 15px;
+  padding: 10px 15px;
+  background: #fafafa;
+  border-radius: 4px;
+}
+
+.summary-info {
+  font-size: 14px;
+  color: #666;
+}
+
+.summary-info strong {
+  color: #409EFF;
+  margin: 0 2px;
+}
+
+.divider {
+  margin: 0 10px;
+  color: #ddd;
 }
 </style>

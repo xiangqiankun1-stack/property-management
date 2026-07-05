@@ -4,23 +4,38 @@
     <el-card class="search-card">
       <el-form :model="searchForm" inline>
         <el-form-item label="角色名称">
-          <el-input v-model="searchForm.roleName" placeholder="请输入角色名称" />
+          <el-input v-model="searchForm.roleName" placeholder="请输入角色名称" clearable />
+        </el-form-item>
+        <el-form-item label="角色代码">
+          <el-input v-model="searchForm.roleCode" placeholder="请输入角色代码" clearable />
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleSearch">搜索</el-button>
-          <el-button @click="handleReset">重置</el-button>
+          <el-button type="primary" @click="handleSearch">
+            <el-icon><Search /></el-icon>
+            搜索
+          </el-button>
+          <el-button @click="handleReset">
+            <el-icon><RefreshLeft /></el-icon>
+            重置
+          </el-button>
         </el-form-item>
       </el-form>
       <el-button type="primary" @click="openDialog('add')" class="add-btn">
-        <el-icon>Plus</el-icon>
+       
         新增角色
       </el-button>
     </el-card>
 
     <!-- 数据表格 -->
     <el-card class="table-card">
+      <div class="table-header">
+        <div class="summary-info">
+          <span>共 <strong>{{ pagination.total }}</strong> 条记录</span>
+        </div>
+      </div>
+      
       <el-table 
-        :data="tableData" 
+        :data="displayData" 
         border
         stripe
         :loading="loading"
@@ -31,30 +46,30 @@
         <el-table-column prop="roleCode" label="角色代码"/>
         <el-table-column prop="description" label="描述"/>
         <el-table-column prop="createTime" label="创建时间" width="180"/>
-        <el-table-column label="操作" width="220" align="center">
+        <el-table-column label="操作" width="200" align="center">
           <template #default="scope">
             <el-button 
               size="small" 
               @click="openDialog('edit', scope.row)"
             >
-              <el-icon>编辑</el-icon>
-              
+             
+              编辑
             </el-button>
             <el-button 
               size="small" 
               type="primary"
               @click="handlePermissions(scope.row)"
             >
-              <el-icon>权限</el-icon>
-              
+             
+              权限
             </el-button>
             <el-button 
               size="small" 
               type="danger"
               @click="handleDelete(scope.row.id)"
             >
-              <el-icon>删除</el-icon>
               
+              删除
             </el-button>
           </template>
         </el-table-column>
@@ -129,8 +144,9 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { Search, RefreshLeft, Plus, Edit, Delete, Key } from '@element-plus/icons-vue'
 import {
   getRoleList,
   createRole,
@@ -140,10 +156,12 @@ import {
 
 // 搜索表单
 const searchForm = reactive({
-  roleName: ''
+  roleName: '',
+  roleCode: ''
 })
 
 // 表格数据
+const allData = ref([])
 const tableData = ref([])
 const loading = ref(false)
 
@@ -226,43 +244,67 @@ const dialogTitle = computed(() => {
   return dialogType.value === 'add' ? '新增角色' : '编辑角色'
 })
 
-// 是否编辑状态
-const isEdit = computed(() => {
-  return dialogType.value === 'edit'
+// 当前页显示的数据
+const displayData = computed(() => {
+  const start = (pagination.currentPage - 1) * pagination.pageSize
+  const end = start + pagination.pageSize
+  return tableData.value.slice(start, end)
 })
+
+// 前端搜索过滤
+const filterData = () => {
+  let filtered = [...allData.value]
+  
+  if (searchForm.roleName) {
+    filtered = filtered.filter(item => 
+      item.roleName.toLowerCase().includes(searchForm.roleName.toLowerCase())
+    )
+  }
+  
+  if (searchForm.roleCode) {
+    filtered = filtered.filter(item => 
+      item.roleCode.toLowerCase().includes(searchForm.roleCode.toLowerCase())
+    )
+  }
+  
+  return filtered
+}
+
+// 更新表格数据
+const updateTableData = () => {
+  const filtered = filterData()
+  tableData.value = filtered
+  pagination.total = tableData.value.length
+  pagination.currentPage = 1
+}
 
 // 加载数据
 const loadData = async () => {
   loading.value = true
   try {
-    const params = {
-      page: pagination.currentPage,
-      size: pagination.pageSize,
-      ...searchForm
-    }
-    const res = await getRoleList(params)
-    // 后端返回的是数组，直接使用
+    const res = await getRoleList()
+    
     if (Array.isArray(res) && res.length > 0) {
-      tableData.value = res
-      pagination.total = res.length
+      allData.value = res
     } else {
-      // 使用模拟数据
-      tableData.value = [
+      allData.value = [
         { id: 1, roleName: '管理员', roleCode: 'ADMIN', description: '系统管理员', createTime: '2026-01-01T09:00:00' },
         { id: 2, roleName: '维修人员', roleCode: 'WORKER', description: '维修师傅', createTime: '2026-01-01T09:00:00' },
-        { id: 3, roleName: '客服人员', roleCode: 'SERVICE', description: '物业客服', createTime: '2026-01-01T09:00:00' }
+        { id: 3, roleName: '客服人员', roleCode: 'SERVICE', description: '物业客服', createTime: '2026-01-01T09:00:00' },
+        { id: 4, roleName: '财务人员', roleCode: 'FINANCE', description: '财务人员', createTime: '2026-01-01T09:00:00' }
       ]
-      pagination.total = tableData.value.length
     }
+    
+    updateTableData()
   } catch (error) {
     console.error('加载角色列表失败:', error)
-    // 使用模拟数据
-    tableData.value = [
+    allData.value = [
       { id: 1, roleName: '管理员', roleCode: 'ADMIN', description: '系统管理员', createTime: '2026-01-01T09:00:00' },
       { id: 2, roleName: '维修人员', roleCode: 'WORKER', description: '维修师傅', createTime: '2026-01-01T09:00:00' },
-      { id: 3, roleName: '客服人员', roleCode: 'SERVICE', description: '物业客服', createTime: '2026-01-01T09:00:00' }
+      { id: 3, roleName: '客服人员', roleCode: 'SERVICE', description: '物业客服', createTime: '2026-01-01T09:00:00' },
+      { id: 4, roleName: '财务人员', roleCode: 'FINANCE', description: '财务人员', createTime: '2026-01-01T09:00:00' }
     ]
-    pagination.total = tableData.value.length
+    updateTableData()
   } finally {
     loading.value = false
   }
@@ -270,14 +312,14 @@ const loadData = async () => {
 
 // 搜索
 const handleSearch = () => {
-  pagination.currentPage = 1
-  loadData()
+  updateTableData()
 }
 
 // 重置
 const handleReset = () => {
   searchForm.roleName = ''
-  handleSearch()
+  searchForm.roleCode = ''
+  updateTableData()
 }
 
 // 打开弹窗
@@ -285,23 +327,14 @@ const openDialog = (type, row = null) => {
   dialogType.value = type
   dialogVisible.value = true
   
-  // 重置表单
   if (formRef.value) {
     formRef.value.resetFields()
   }
   
   if (type === 'add') {
-    form.id = ''
-    form.roleName = ''
-    form.roleCode = ''
-    form.description = ''
-    form.remark = ''
+    Object.assign(form, { id: '', roleName: '', roleCode: '', description: '', remark: '' })
   } else if (type === 'edit' && row) {
-    form.id = row.id
-    form.roleName = row.roleName
-    form.roleCode = row.roleCode
-    form.description = row.description
-    form.remark = row.remark
+    Object.assign(form, { id: row.id, roleName: row.roleName, roleCode: row.roleCode, description: row.description, remark: row.remark })
   }
 }
 
@@ -360,7 +393,6 @@ const handleDelete = async (id) => {
 const handlePermissions = (row) => {
   currentRoleId.value = row.id
   permissionDialogVisible.value = true
-  // 模拟已选中的权限
   checkedPermissions.value = [1, 11, 12]
 }
 
@@ -378,17 +410,18 @@ const handleSavePermissions = () => {
 // 分页大小改变
 const handleSizeChange = (size) => {
   pagination.pageSize = size
-  loadData()
+  if (pagination.currentPage > Math.ceil(pagination.total / size)) {
+    pagination.currentPage = 1
+  }
 }
 
 // 当前页改变
 const handleCurrentChange = (page) => {
   pagination.currentPage = page
-  loadData()
 }
 
 // 初始化
-loadData()
+onMounted(() => loadData())
 </script>
 
 <style scoped>
@@ -396,15 +429,42 @@ loadData()
   padding: 20px;
 }
 
-.search-card {
-  margin-bottom: 20px;
+.search-card { 
+  margin-bottom: 20px; 
+  position: relative;
 }
 
 .add-btn {
-  float: right;
+  position: absolute;
+  right: 20px;
+  top: 15px;
+  padding: 8px 16px;
+  font-size: 14px;
 }
 
 .table-card {
   min-height: 400px;
+}
+
+.table-header {
+  margin-bottom: 15px;
+  padding: 10px 15px;
+  background: #fafafa;
+  border-radius: 4px;
+}
+
+.summary-info {
+  font-size: 14px;
+  color: #666;
+}
+
+.summary-info strong {
+  color: #409EFF;
+  margin: 0 2px;
+}
+
+.divider {
+  margin: 0 10px;
+  color: #ddd;
 }
 </style>

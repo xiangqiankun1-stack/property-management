@@ -3,7 +3,7 @@ import request from '@/utils/request'
 // 查询楼栋列表
 export const getBuildingList = (params) => {
   return request({
-    url: '/buildings',
+    url: '/api/v1/buildings',
     method: 'get',
     params
   })
@@ -12,7 +12,7 @@ export const getBuildingList = (params) => {
 // 根据ID查询楼栋
 export const getBuildingById = (id) => {
   return request({
-    url: `/buildings/${id}`,
+    url: `/api/v1/buildings/${id}`,
     method: 'get'
   })
 }
@@ -20,7 +20,7 @@ export const getBuildingById = (id) => {
 // 新增楼栋
 export const createBuilding = (data) => {
   return request({
-    url: '/buildings',
+    url: '/api/v1/buildings',
     method: 'post',
     data
   })
@@ -29,7 +29,7 @@ export const createBuilding = (data) => {
 // 修改楼栋
 export const updateBuilding = (id, data) => {
   return request({
-    url: `/buildings/${id}`,
+    url: `/api/v1/buildings/${id}`,
     method: 'put',
     data
   })
@@ -38,7 +38,7 @@ export const updateBuilding = (id, data) => {
 // 删除楼栋
 export const deleteBuilding = (id) => {
   return request({
-    url: `/buildings/${id}`,
+    url: `/api/v1/buildings/${id}`,
     method: 'delete'
   })
 }

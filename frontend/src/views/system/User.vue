@@ -12,8 +12,8 @@
         </el-form-item>
       </el-form>
       <el-button type="primary" @click="openDialog('add')" class="add-btn">
-        <el-icon>Plus</el-icon>
         新增用户
+        
       </el-button>
     </el-card>
 
@@ -43,16 +43,16 @@
               size="small" 
               @click="openDialog('edit', scope.row)"
             >
+              <el-icon>编辑</el-icon>
               
-              编辑
             </el-button>
             <el-button 
               size="small" 
               type="danger"
               @click="handleDelete(scope.row.id)"
             >
-             
-              删除
+             <el-icon>删除</el-icon>
+              
             </el-button>
           </template>
         </el-table-column>
@@ -342,12 +342,17 @@ loadData()
   padding: 20px;
 }
 
-.search-card {
-  margin-bottom: 20px;
+.search-card { 
+  margin-bottom: 20px; 
+  position: relative;
 }
 
 .add-btn {
-  float: right;
+  position: absolute;
+  right: 20px;
+  top: 15px;
+  padding: 8px 16px;
+  font-size: 14px;
 }
 
 .table-card {

@@ -8,9 +8,11 @@
         <el-form-item label="支付方式">
           <el-select v-model="searchForm.method" placeholder="请选择支付方式">
             <el-option label="全部" value="" />
+            <el-option label="现金" value="现金" />
             <el-option label="微信" value="微信" />
             <el-option label="支付宝" value="支付宝" />
-            <el-option label="现金" value="现金" />
+            <el-option label="银行卡" value="银行卡" />
+            <el-option label="其他" value="其他" />
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -19,32 +21,31 @@
         </el-form-item>
       </el-form>
       <el-button type="primary" @click="openDialog('add')" class="add-btn">
-        <el-icon>新增缴费</el-icon>
-        
+        新增缴费
       </el-button>
     </el-card>
 
     <el-card class="table-card">
       <el-table :data="tableData" border stripe :loading="loading" style="width: 100%">
         <el-table-column prop="id" label="ID" width="80" align="center"/>
+        <el-table-column prop="paymentNo" label="缴费流水号"/>
         <el-table-column prop="billName" label="账单名称"/>
         <el-table-column prop="payer" label="缴费人"/>
         <el-table-column prop="amount" label="金额(元)" width="120"/>
-        <el-table-column prop="method" label="支付方式" width="100"/>
+        <el-table-column prop="method" label="支付方式" width="120"/>
+        <el-table-column prop="payTime" label="支付时间" width="180"/>
+        <el-table-column prop="transactionId" label="交易单号"/>
         <el-table-column prop="status" label="状态" width="100" align="center">
           <template #default="scope">
             <el-tag :type="scope.row.status === 1 ? 'success' : 'warning'">
-              {{ scope.row.status === 1 ? '成功' : '失败' }}
+              {{ scope.row.status === 1 ? '有效' : '已作废' }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="payTime" label="支付时间" width="180"/>
-        <el-table-column prop="transactionId" label="交易单号"/>
         <el-table-column label="操作" width="150" align="center">
           <template #default="scope">
             <el-button size="small" type="danger" @click="handleDelete(scope.row.id)">
-              <el-icon>删除</el-icon>
-              
+              删除
             </el-button>
           </template>
         </el-table-column>
@@ -64,21 +65,35 @@
 
     <el-dialog v-model="dialogVisible" title="新增缴费" width="500px" @close="handleDialogClose">
       <el-form :model="form" ref="formRef" :rules="rules" label-width="100px">
-        <el-form-item label="账单名称" prop="billName">
-          <el-input v-model="form.billName" placeholder="请输入账单名称" />
+        <el-form-item label="缴费流水号" prop="paymentNo">
+          <el-input v-model="form.paymentNo" placeholder="请输入缴费流水号" />
         </el-form-item>
-        <el-form-item label="缴费人" prop="payer">
-          <el-input v-model="form.payer" placeholder="请输入缴费人姓名" />
+        <el-form-item label="账单ID" prop="billId">
+          <el-input v-model.number="form.billId" type="number" placeholder="请输入账单ID" />
         </el-form-item>
-        <el-form-item label="金额(元)" prop="amount">
-          <el-input v-model.number="form.amount" type="number" placeholder="请输入缴费金额" />
+        <el-form-item label="业主ID" prop="ownerId">
+          <el-input v-model.number="form.ownerId" type="number" placeholder="请输入业主ID" />
         </el-form-item>
-        <el-form-item label="支付方式" prop="method">
-          <el-select v-model="form.method" placeholder="请选择支付方式">
-            <el-option label="微信" value="微信" />
-            <el-option label="支付宝" value="支付宝" />
-            <el-option label="现金" value="现金" />
+        <el-form-item label="金额(元)" prop="payAmount">
+          <el-input v-model.number="form.payAmount" type="number" placeholder="请输入缴费金额" />
+        </el-form-item>
+        <el-form-item label="支付方式" prop="payMethod">
+          <el-select v-model="form.payMethod" placeholder="请选择支付方式">
+            <el-option label="现金" :value="1" />
+            <el-option label="微信" :value="2" />
+            <el-option label="支付宝" :value="3" />
+            <el-option label="银行卡" :value="4" />
+            <el-option label="其他" :value="5" />
           </el-select>
+        </el-form-item>
+        <el-form-item label="缴费时间" prop="payTime">
+          <el-date-picker v-model="form.payTime" type="datetime" placeholder="请选择缴费时间" />
+        </el-form-item>
+        <el-form-item label="操作员ID" prop="operatorId">
+          <el-input v-model.number="form.operatorId" type="number" placeholder="请输入操作员ID" />
+        </el-form-item>
+        <el-form-item label="凭证号" prop="voucherNo">
+          <el-input v-model="form.voucherNo" placeholder="请输入第三方支付流水号" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -101,13 +116,35 @@ const pagination = reactive({ currentPage: 1, pageSize: 10, total: 0 })
 
 const dialogVisible = ref(false)
 const formRef = ref(null)
-const form = reactive({ billName: '', payer: '', amount: '', method: '微信' })
+const form = reactive({ 
+  paymentNo: '', 
+  billId: '', 
+  ownerId: '', 
+  payAmount: '', 
+  payMethod: 2, 
+  payTime: '', 
+  operatorId: '', 
+  voucherNo: '',
+  status: 1 
+})
 
 const rules = {
-  billName: [{ required: true, message: '请输入账单名称', trigger: 'blur' }],
-  payer: [{ required: true, message: '请输入缴费人姓名', trigger: 'blur' }],
-  amount: [{ required: true, message: '请输入缴费金额', trigger: 'blur' }, { type: 'number', min: 0.01, message: '金额必须大于0', trigger: 'blur' }],
-  method: [{ required: true, message: '请选择支付方式', trigger: 'blur' }]
+  paymentNo: [{ required: true, message: '请输入缴费流水号', trigger: 'blur' }],
+  billId: [{ required: true, message: '请输入账单ID', trigger: 'blur' }, { type: 'number', message: '必须是数字', trigger: 'blur' }],
+  ownerId: [{ required: true, message: '请输入业主ID', trigger: 'blur' }, { type: 'number', message: '必须是数字', trigger: 'blur' }],
+  payAmount: [{ required: true, message: '请输入缴费金额', trigger: 'blur' }, { type: 'number', min: 0.01, message: '金额必须大于0', trigger: 'blur' }],
+  payMethod: [{ required: true, message: '请选择支付方式', trigger: 'blur' }],
+  payTime: [{ required: true, message: '请选择缴费时间', trigger: 'blur' }],
+  operatorId: [{ required: true, message: '请输入操作员ID', trigger: 'blur' }, { type: 'number', message: '必须是数字', trigger: 'blur' }]
+}
+
+// 支付方式映射
+const payMethodMap = {
+  1: '现金',
+  2: '微信',
+  3: '支付宝',
+  4: '银行卡',
+  5: '其他'
 }
 
 const loadData = async () => {
@@ -115,25 +152,29 @@ const loadData = async () => {
   try {
     const params = { page: pagination.currentPage, size: pagination.pageSize, ...searchForm }
     const res = await getPaymentList(params)
+    
     if (Array.isArray(res) && res.length > 0) {
-      tableData.value = res
+      // 转换后端数据为前端格式
+      tableData.value = res.map(item => ({
+        id: item.id,
+        paymentNo: item.paymentNo,
+        billName: `账单${item.billId}`,  // 实际项目中需要调用账单接口获取名称
+        payer: `业主${item.ownerId}`,    // 实际项目中需要调用业主接口获取姓名
+        amount: item.payAmount,
+        method: payMethodMap[item.payMethod] || '未知',
+        payTime: item.payTime,
+        transactionId: item.voucherNo || '-',
+        status: item.status
+      }))
       pagination.total = res.length
     } else {
-      tableData.value = [
-        { id: 1, billName: '2026年1月物业费', payer: '张三', amount: 150.00, method: '微信', status: 1, payTime: '2026-01-15T10:00:00', transactionId: 'TX202601150001' },
-        { id: 2, billName: '2026年1月水费', payer: '张三', amount: 35.50, method: '微信', status: 1, payTime: '2026-01-15T10:01:00', transactionId: 'TX202601150002' },
-        { id: 3, billName: '2026年1月电费', payer: '李四', amount: 89.00, method: '支付宝', status: 1, payTime: '2026-01-20T14:30:00', transactionId: 'TX202601200001' }
-      ]
-      pagination.total = tableData.value.length
+      tableData.value = []
+      pagination.total = 0
     }
   } catch (error) {
     console.error('加载缴费列表失败:', error)
-    tableData.value = [
-      { id: 1, billName: '2026年1月物业费', payer: '张三', amount: 150.00, method: '微信', status: 1, payTime: '2026-01-15T10:00:00', transactionId: 'TX202601150001' },
-      { id: 2, billName: '2026年1月水费', payer: '张三', amount: 35.50, method: '微信', status: 1, payTime: '2026-01-15T10:01:00', transactionId: 'TX202601150002' },
-      { id: 3, billName: '2026年1月电费', payer: '李四', amount: 89.00, method: '支付宝', status: 1, payTime: '2026-01-20T14:30:00', transactionId: 'TX202601200001' }
-    ]
-    pagination.total = tableData.value.length
+    tableData.value = []
+    pagination.total = 0
   } finally {
     loading.value = false
   }
@@ -145,7 +186,7 @@ const handleReset = () => { searchForm.payer = ''; searchForm.method = ''; handl
 const openDialog = () => {
   dialogVisible.value = true
   if (formRef.value) formRef.value.resetFields()
-  Object.assign(form, { billName: '', payer: '', amount: '', method: '微信' })
+  Object.assign(form, { paymentNo: '', billId: '', ownerId: '', payAmount: '', payMethod: 2, payTime: '', operatorId: '', voucherNo: '', status: 1 })
 }
 
 const handleDialogClose = () => { if (formRef.value) formRef.value.resetFields() }

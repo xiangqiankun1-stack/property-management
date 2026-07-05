@@ -12,8 +12,8 @@
         </el-form-item>
       </el-form>
       <el-button type="primary" @click="openDialog('add')" class="add-btn">
-        <el-icon>Plus</el-icon>
         新增角色
+        
       </el-button>
     </el-card>
 
@@ -396,12 +396,17 @@ loadData()
   padding: 20px;
 }
 
-.search-card {
-  margin-bottom: 20px;
+.search-card { 
+  margin-bottom: 20px; 
+  position: relative;
 }
 
 .add-btn {
-  float: right;
+  position: absolute;
+  right: 20px;
+  top: 15px;
+  padding: 8px 16px;
+  font-size: 14px;
 }
 
 .table-card {

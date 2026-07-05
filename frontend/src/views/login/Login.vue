@@ -3,16 +3,17 @@
     <div class="login-box">
       <div class="login-header">
         <div class="logo-wrap">
-          <el-icon :size="48" color="#409EFF"><Building /></el-icon>
+          <!-- 使用 el-icon 内置图标或文字替代 -->
+          <span class="logo-text">🏢</span>
         </div>
         <h2>智慧物业管理系统</h2>
         <p>欢迎登录后台管理系统</p>
       </div>
       
       <el-form :model="form" ref="formRef" class="login-form">
-        <el-form-item prop="userName">
+        <el-form-item prop="username">
           <el-input 
-            v-model="form.userName" 
+            v-model="form.username" 
             placeholder="用户名"
             prefix-icon="User"
             size="large"
@@ -42,24 +43,22 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { login } from '@/api/login'
-import { Building } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 
 const router = useRouter()
 const userStore = useUserStore()
-const formRef = ref(null)
 
 const form = reactive({
-  userName: '',
+  username: '',
   password: ''
 })
 
 const handleLogin = async () => {
-  if (!form.userName.trim()) {
+  if (!form.username.trim()) {
     ElMessage.warning('请输入用户名')
     return
   }
@@ -70,13 +69,15 @@ const handleLogin = async () => {
   
   try {
     const response = await login(form)
-    if (response && response.data) {
-      userStore.setToken(response.data.token)
-      userStore.userInfo = response.data.userInfo || {}
+    
+    if (response && response.code === 200) {
+      localStorage.setItem('token', response.data)
+      userStore.token = response.data
+      
       ElMessage.success('登录成功')
       router.push('/dashboard')
     } else {
-      ElMessage.error('登录失败')
+      ElMessage.error(response.message || '登录失败')
     }
   } catch (error) {
     ElMessage.error('登录失败，请检查网络或账号密码')
@@ -109,6 +110,10 @@ const handleLogin = async () => {
 
 .logo-wrap {
   margin-bottom: 15px;
+}
+
+.logo-text {
+  font-size: 48px;
 }
 
 .login-header h2 {

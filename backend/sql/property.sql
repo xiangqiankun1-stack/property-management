@@ -354,6 +354,94 @@ CREATE UNIQUE INDEX uk_record_no ON inspection_record(record_no);
 CREATE INDEX idx_record_inspection_id ON inspection_record(inspection_id);
 CREATE INDEX idx_record_handle_user ON inspection_record(handle_user_id);
 
+
+
+-- =============================================
+-- 四、财务管理
+-- =============================================
+
+-- 4.1 费用项目表
+DROP TABLE IF EXISTS fee_item;
+CREATE TABLE fee_item(
+                         `id` BIGINT NOT NULL COMMENT '主键' ,
+                         `create_time` DATETIME NOT NULL COMMENT '创建时间' ,
+                         `update_time` DATETIME NOT NULL COMMENT '更新时间' ,
+                         `create_user` BIGINT NOT NULL COMMENT '创建人' ,
+                         `update_user` BIGINT NOT NULL COMMENT '更新人' ,
+                         `description` VARCHAR(255) COMMENT '描述' ,
+                         `remark` VARCHAR(255) COMMENT '备注' ,
+                         `fee_code` VARCHAR(64) NOT NULL COMMENT '费用编码' ,
+                         `fee_name` VARCHAR(128) NOT NULL COMMENT '费用名称(如：物业费/停车费/水费)' ,
+                         `fee_type` INT NOT NULL COMMENT '费用类型：1.物业费 2.水费 3.电费 4.停车费 5.其他' ,
+                         `charge_mode` INT NOT NULL COMMENT '计费方式：1.按面积计费 2.固定金额 3.按用量计费' ,
+                         `unit_price` DECIMAL(10,2) NOT NULL COMMENT '单价(元)' ,
+                         `unit` VARCHAR(32) COMMENT '计价单位(如：元/㎡/月、元/车位/月)' ,
+                         `billing_cycle` INT NOT NULL DEFAULT 1 COMMENT '计费周期：1.月度 2.季度 3.年度 4.一次性' ,
+                         `status` INT NOT NULL DEFAULT 1 COMMENT '状态：1.启用 0.停用' ,
+                         PRIMARY KEY (id)
+) COMMENT = '费用项目信息表';
+CREATE UNIQUE INDEX uk_fee_code ON fee_item(fee_code);
+
+-- 4.2 账单表
+DROP TABLE IF EXISTS bill;
+CREATE TABLE bill(
+                     `id` BIGINT NOT NULL COMMENT '主键' ,
+                     `create_time` DATETIME NOT NULL COMMENT '创建时间' ,
+                     `update_time` DATETIME NOT NULL COMMENT '更新时间' ,
+                     `create_user` BIGINT NOT NULL COMMENT '创建人' ,
+                     `update_user` BIGINT NOT NULL COMMENT '更新人' ,
+                     `description` VARCHAR(255) COMMENT '描述' ,
+                     `remark` VARCHAR(255) COMMENT '备注' ,
+                     `bill_no` VARCHAR(64) NOT NULL COMMENT '账单编号' ,
+                     `house_id` BIGINT NOT NULL COMMENT '房屋ID' ,
+                     `owner_id` BIGINT NOT NULL COMMENT '业主ID' ,
+                     `fee_item_id` BIGINT NOT NULL COMMENT '费用项目ID' ,
+                     `period_start` DATE NOT NULL COMMENT '账期开始日期' ,
+                     `period_end` DATE NOT NULL COMMENT '账期结束日期' ,
+                     `amount` DECIMAL(10,2) NOT NULL COMMENT '应收金额(元)' ,
+                     `paid_amount` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '已收金额(元)' ,
+                     `due_date` DATE COMMENT '缴费截止日期' ,
+                     `generate_time` DATETIME NOT NULL COMMENT '账单生成时间' ,
+                     `status` INT NOT NULL DEFAULT 0 COMMENT '状态：0.未缴纳 1.部分缴纳 2.已缴清 3.已作废' ,
+                     PRIMARY KEY (id),
+                     CONSTRAINT fk_bill_house FOREIGN KEY (house_id) REFERENCES house(id),
+                     CONSTRAINT fk_bill_owner FOREIGN KEY (owner_id) REFERENCES owner(id),
+                     CONSTRAINT fk_bill_fee_item FOREIGN KEY (fee_item_id) REFERENCES fee_item(id)
+) COMMENT = '账单信息表';
+CREATE UNIQUE INDEX uk_bill_no ON bill(bill_no);
+CREATE INDEX idx_bill_house_id ON bill(house_id);
+CREATE INDEX idx_bill_owner_id ON bill(owner_id);
+CREATE INDEX idx_bill_fee_item_id ON bill(fee_item_id);
+
+-- 4.3 缴费登记表
+DROP TABLE IF EXISTS payment_record;
+CREATE TABLE payment_record(
+                               `id` BIGINT NOT NULL COMMENT '主键' ,
+                               `create_time` DATETIME NOT NULL COMMENT '创建时间' ,
+                               `update_time` DATETIME NOT NULL COMMENT '更新时间' ,
+                               `create_user` BIGINT NOT NULL COMMENT '创建人' ,
+                               `update_user` BIGINT NOT NULL COMMENT '更新人' ,
+                               `description` VARCHAR(255) COMMENT '描述' ,
+                               `remark` VARCHAR(255) COMMENT '备注' ,
+                               `payment_no` VARCHAR(64) NOT NULL COMMENT '缴费流水号' ,
+                               `bill_id` BIGINT NOT NULL COMMENT '账单ID' ,
+                               `owner_id` BIGINT NOT NULL COMMENT '缴费业主ID' ,
+                               `pay_amount` DECIMAL(10,2) NOT NULL COMMENT '本次缴费金额(元)' ,
+                               `pay_method` INT NOT NULL COMMENT '缴费方式：1.现金 2.微信 3.支付宝 4.银行卡 5.其他' ,
+                               `pay_time` DATETIME NOT NULL COMMENT '缴费时间' ,
+                               `operator_id` BIGINT NOT NULL COMMENT '登记人员ID(关联sys_user_info)' ,
+                               `voucher_no` VARCHAR(128) COMMENT '第三方支付流水号/凭证号' ,
+                               `status` INT NOT NULL DEFAULT 1 COMMENT '状态：1.有效 0.已作废(如登记有误被撤销)' ,
+                               PRIMARY KEY (id),
+                               CONSTRAINT fk_payment_bill FOREIGN KEY (bill_id) REFERENCES bill(id),
+                               CONSTRAINT fk_payment_owner FOREIGN KEY (owner_id) REFERENCES owner(id),
+                               CONSTRAINT fk_payment_operator FOREIGN KEY (operator_id) REFERENCES sys_user_info(id)
+) COMMENT = '缴费登记信息表';
+CREATE UNIQUE INDEX uk_payment_no ON payment_record(payment_no);
+CREATE INDEX idx_payment_bill_id ON payment_record(bill_id);
+CREATE INDEX idx_payment_owner_id ON payment_record(owner_id);
+CREATE INDEX idx_payment_operator_id ON payment_record(operator_id);
+
 -- =============================================
 -- 初始化数据（与 schema_with_fk.sql 配套使用）
 -- 说明：为便于演示，所有 create_user / update_user 均设为 1（管理员）
@@ -487,4 +575,32 @@ INSERT INTO inspection_record
 (id, create_time, update_time, create_user, update_user, description, remark, inspection_id, record_no, issue_type, issue_desc, issue_images, issue_location, severity, handle_user_id, handle_desc, handle_images, plan_deadline, actual_complete_time, verify_user_id, verify_time, verify_result, status)
 VALUES
     (1, '2026-02-01 09:00:00', '2026-02-03 11:00:00', 1, 1, NULL, NULL, 1, 'REC20260201001', '设施损坏', '1号楼3楼灭火器压力表指针不在绿色区域', NULL, '1号楼3楼楼道', 3, 3, '已更换新灭火器并检查压力', NULL, '2026-02-03 18:00:00', '2026-02-03 11:00:00', 1, '2026-02-03 12:00:00', 1, 3);
+
+-- =============================================
+-- 四、财务管理
+-- =============================================
+
+-- 4.1 费用项目数据
+INSERT INTO fee_item
+(id, create_time, update_time, create_user, update_user, description, remark, fee_code, fee_name, fee_type, charge_mode, unit_price, unit, billing_cycle, status)
+VALUES
+    (1, '2026-01-01 09:00:00', '2026-01-01 09:00:00', 1, 1, '按建筑面积每月收取', NULL, 'FEE_PROPERTY', '物业费', 1, 1, 2.50, '元/㎡/月', 1, 1),
+    (2, '2026-01-01 09:00:00', '2026-01-01 09:00:00', 1, 1, '固定车位月租', NULL, 'FEE_PARKING', '停车费', 4, 2, 300.00, '元/车位/月', 1, 1),
+    (3, '2026-01-01 09:00:00', '2026-01-01 09:00:00', 1, 1, '按实际用水量计费', NULL, 'FEE_WATER', '水费', 2, 3, 4.50, '元/吨', 1, 1);
+
+-- 4.2 账单数据
+INSERT INTO bill
+(id, create_time, update_time, create_user, update_user, description, remark, bill_no, house_id, owner_id, fee_item_id, period_start, period_end, amount, paid_amount, due_date, generate_time, status)
+VALUES
+    (1, '2026-02-01 00:10:00', '2026-02-10 14:20:00', 1, 4, NULL, NULL, 'BL202602010001', 1, 1, 1, '2026-02-01', '2026-02-28', 223.75, 223.75, '2026-02-15', '2026-02-01 00:10:00', 2),
+    (2, '2026-02-01 00:10:00', '2026-02-01 00:10:00', 1, 1, NULL, NULL, 'BL202602010002', 2, 2, 1, '2026-02-01', '2026-02-28', 300.00, 0.00, '2026-02-15', '2026-02-01 00:10:00', 0),
+    (3, '2026-02-01 00:10:00', '2026-02-12 09:00:00', 1, 4, NULL, NULL, 'BL202602010003', 2, 2, 2, '2026-02-01', '2026-02-28', 300.00, 150.00, '2026-02-15', '2026-02-01 00:10:00', 1);
+
+-- 4.3 缴费登记数据
+INSERT INTO payment_record
+(id, create_time, update_time, create_user, update_user, description, remark, payment_no, bill_id, owner_id, pay_amount, pay_method, pay_time, operator_id, voucher_no, status)
+VALUES
+    (1, '2026-02-10 14:20:00', '2026-02-10 14:20:00', 4, 4, NULL, NULL, 'PAY202602100001', 1, 1, 223.75, 2, '2026-02-10 14:20:00', 4, 'WX20260210142012345', 1),
+    (2, '2026-02-12 09:00:00', '2026-02-12 09:00:00', 4, 4, NULL, '业主先支付部分车位费，剩余月底补齐', 'PAY202602120001', 3, 2, 150.00, 1, '2026-02-12 09:00:00', 4, NULL, 1);
+
 

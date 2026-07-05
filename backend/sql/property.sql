@@ -4,7 +4,7 @@
 
 DROP TABLE IF EXISTS sys_permission_info;
 CREATE TABLE sys_permission_info(
-                                    `id` BIGINT NOT NULL COMMENT '主键' ,
+                                    `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键' ,
                                     `create_time` DATETIME NOT NULL COMMENT '创建时间' ,
                                     `update_time` DATETIME NOT NULL COMMENT '更新时间' ,
                                     `create_user` BIGINT NOT NULL COMMENT '创建人' ,
@@ -25,7 +25,7 @@ CREATE TABLE sys_permission_info(
 
 DROP TABLE IF EXISTS sys_role_info;
 CREATE TABLE sys_role_info(
-                              `id` BIGINT NOT NULL COMMENT '主键' ,
+                              `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键' ,
                               `create_time` DATETIME NOT NULL COMMENT '创建时间' ,
                               `update_time` DATETIME NOT NULL COMMENT '更新时间' ,
                               `create_user` BIGINT NOT NULL COMMENT '创建人' ,
@@ -39,7 +39,7 @@ CREATE TABLE sys_role_info(
 
 DROP TABLE IF EXISTS sys_role_permission;
 CREATE TABLE sys_role_permission(
-                                    `id` BIGINT NOT NULL COMMENT '主键' ,
+                                    `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键' ,
                                     `create_time` DATETIME NOT NULL COMMENT '创建时间' ,
                                     `update_time` DATETIME NOT NULL COMMENT '更新时间' ,
                                     `create_user` BIGINT NOT NULL COMMENT '创建人' ,
@@ -57,7 +57,7 @@ CREATE INDEX role_info_id ON sys_role_permission(role_info_id);
 
 DROP TABLE IF EXISTS sys_user_info;
 CREATE TABLE sys_user_info(
-                              `id` BIGINT NOT NULL COMMENT '主键' ,
+                              `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键' ,
                               `create_time` DATETIME NOT NULL COMMENT '创建时间' ,
                               `update_time` DATETIME NOT NULL COMMENT '更新时间' ,
                               `create_user` BIGINT NOT NULL COMMENT '创建人' ,
@@ -74,7 +74,7 @@ CREATE TABLE sys_user_info(
 
 DROP TABLE IF EXISTS sys_user_role;
 CREATE TABLE sys_user_role(
-                              `id` BIGINT NOT NULL COMMENT '主键' ,
+                              `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键' ,
                               `create_time` DATETIME NOT NULL COMMENT '创建时间' ,
                               `update_time` DATETIME NOT NULL COMMENT '更新时间' ,
                               `create_user` BIGINT NOT NULL COMMENT '创建人' ,
@@ -97,7 +97,7 @@ CREATE INDEX user_info_id ON sys_user_role(user_info_id);
 -- 2.1 小区表
 DROP TABLE IF EXISTS community;
 CREATE TABLE community(
-                          `id` BIGINT NOT NULL COMMENT '主键' ,
+                          `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键' ,
                           `create_time` DATETIME NOT NULL COMMENT '创建时间' ,
                           `update_time` DATETIME NOT NULL COMMENT '更新时间' ,
                           `create_user` BIGINT NOT NULL COMMENT '创建人' ,
@@ -118,7 +118,7 @@ CREATE TABLE community(
 -- 2.2 楼栋表
 DROP TABLE IF EXISTS building;
 CREATE TABLE building(
-                         `id` BIGINT NOT NULL COMMENT '主键' ,
+                         `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键' ,
                          `create_time` DATETIME NOT NULL COMMENT '创建时间' ,
                          `update_time` DATETIME NOT NULL COMMENT '更新时间' ,
                          `create_user` BIGINT NOT NULL COMMENT '创建人' ,
@@ -138,7 +138,7 @@ CREATE INDEX idx_building_community_id ON building(community_id);
 -- 2.3 房屋表
 DROP TABLE IF EXISTS house;
 CREATE TABLE house(
-                      `id` BIGINT NOT NULL COMMENT '主键' ,
+                      `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键' ,
                       `create_time` DATETIME NOT NULL COMMENT '创建时间' ,
                       `update_time` DATETIME NOT NULL COMMENT '更新时间' ,
                       `create_user` BIGINT NOT NULL COMMENT '创建人' ,
@@ -160,7 +160,7 @@ CREATE INDEX idx_house_building_id ON house(building_id);
 -- 2.4 业主表
 DROP TABLE IF EXISTS owner;
 CREATE TABLE owner(
-                      `id` BIGINT NOT NULL COMMENT '主键' ,
+                      `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键' ,
                       `create_time` DATETIME NOT NULL COMMENT '创建时间' ,
                       `update_time` DATETIME NOT NULL COMMENT '更新时间' ,
                       `create_user` BIGINT NOT NULL COMMENT '创建人' ,
@@ -186,7 +186,7 @@ CREATE INDEX idx_owner_house_id ON owner(house_id);
 -- 3.1 报修表
 DROP TABLE IF EXISTS repair;
 CREATE TABLE repair(
-                       `id` BIGINT NOT NULL COMMENT '主键' ,
+                       `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键' ,
                        `create_time` DATETIME NOT NULL COMMENT '创建时间' ,
                        `update_time` DATETIME NOT NULL COMMENT '更新时间' ,
                        `create_user` BIGINT NOT NULL COMMENT '创建人' ,
@@ -213,7 +213,7 @@ CREATE INDEX idx_repair_house_id ON repair(house_id);
 -- 3.2 派单表
 DROP TABLE IF EXISTS repair_order;
 CREATE TABLE repair_order(
-                             `id` BIGINT NOT NULL COMMENT '主键' ,
+                             `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键' ,
                              `create_time` DATETIME NOT NULL COMMENT '创建时间' ,
                              `update_time` DATETIME NOT NULL COMMENT '更新时间' ,
                              `create_user` BIGINT NOT NULL COMMENT '创建人' ,
@@ -237,7 +237,7 @@ CREATE INDEX idx_repair_order_worker_id ON repair_order(worker_id);
 -- 3.3 报修评价表
 DROP TABLE IF EXISTS repair_evaluate;
 CREATE TABLE repair_evaluate(
-                                `id` BIGINT NOT NULL COMMENT '主键' ,
+                                `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键' ,
                                 `create_time` DATETIME NOT NULL COMMENT '创建时间' ,
                                 `update_time` DATETIME NOT NULL COMMENT '更新时间' ,
                                 `create_user` BIGINT NOT NULL COMMENT '创建人' ,
@@ -262,7 +262,7 @@ CREATE INDEX idx_evaluate_owner_id ON repair_evaluate(owner_id);
 -- 3.4 投诉建议表
 DROP TABLE IF EXISTS complaint;
 CREATE TABLE complaint(
-                          `id` BIGINT NOT NULL COMMENT '主键' ,
+                          `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键' ,
                           `create_time` DATETIME NOT NULL COMMENT '创建时间' ,
                           `update_time` DATETIME NOT NULL COMMENT '更新时间' ,
                           `create_user` BIGINT NOT NULL COMMENT '创建人' ,
@@ -293,7 +293,7 @@ CREATE INDEX idx_complaint_handle_user ON complaint(handle_user_id);
 -- 3.5 巡检表
 DROP TABLE IF EXISTS inspection;
 CREATE TABLE inspection(
-                           `id` BIGINT NOT NULL COMMENT '主键' ,
+                           `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键' ,
                            `create_time` DATETIME NOT NULL COMMENT '创建时间' ,
                            `update_time` DATETIME NOT NULL COMMENT '更新时间' ,
                            `create_user` BIGINT NOT NULL COMMENT '创建人' ,
@@ -322,7 +322,7 @@ CREATE INDEX idx_inspection_inspector ON inspection(inspector_id);
 -- 3.6 巡检整改表
 DROP TABLE IF EXISTS inspection_record;
 CREATE TABLE inspection_record(
-                                  `id` BIGINT NOT NULL COMMENT '主键' ,
+                                  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键' ,
                                   `create_time` DATETIME NOT NULL COMMENT '创建时间' ,
                                   `update_time` DATETIME NOT NULL COMMENT '更新时间' ,
                                   `create_user` BIGINT NOT NULL COMMENT '创建人' ,
@@ -363,7 +363,7 @@ CREATE INDEX idx_record_handle_user ON inspection_record(handle_user_id);
 -- 4.1 费用项目表
 DROP TABLE IF EXISTS fee_item;
 CREATE TABLE fee_item(
-                         `id` BIGINT NOT NULL COMMENT '主键' ,
+                         `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键' ,
                          `create_time` DATETIME NOT NULL COMMENT '创建时间' ,
                          `update_time` DATETIME NOT NULL COMMENT '更新时间' ,
                          `create_user` BIGINT NOT NULL COMMENT '创建人' ,
@@ -385,7 +385,7 @@ CREATE UNIQUE INDEX uk_fee_code ON fee_item(fee_code);
 -- 4.2 账单表
 DROP TABLE IF EXISTS bill;
 CREATE TABLE bill(
-                     `id` BIGINT NOT NULL COMMENT '主键' ,
+                     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键' ,
                      `create_time` DATETIME NOT NULL COMMENT '创建时间' ,
                      `update_time` DATETIME NOT NULL COMMENT '更新时间' ,
                      `create_user` BIGINT NOT NULL COMMENT '创建人' ,
@@ -416,7 +416,7 @@ CREATE INDEX idx_bill_fee_item_id ON bill(fee_item_id);
 -- 4.3 缴费登记表
 DROP TABLE IF EXISTS payment_record;
 CREATE TABLE payment_record(
-                               `id` BIGINT NOT NULL COMMENT '主键' ,
+                               `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键' ,
                                `create_time` DATETIME NOT NULL COMMENT '创建时间' ,
                                `update_time` DATETIME NOT NULL COMMENT '更新时间' ,
                                `create_user` BIGINT NOT NULL COMMENT '创建人' ,

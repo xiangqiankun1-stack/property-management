@@ -4,23 +4,46 @@
     <el-card class="search-card">
       <el-form :model="searchForm" inline>
         <el-form-item label="小区名称">
-          <el-input v-model="searchForm.communityName" placeholder="请输入小区名称" />
+          <el-input v-model="searchForm.communityName" placeholder="请输入小区名称" clearable />
+        </el-form-item>
+        <el-form-item label="状态">
+          <el-select v-model="searchForm.status" placeholder="请选择状态" clearable>
+            <el-option label="全部" value="" />
+            <el-option label="正常" :value="1" />
+            <el-option label="停用" :value="0" />
+          </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleSearch">搜索</el-button>
-          <el-button @click="handleReset">重置</el-button>
+          <el-button type="primary" @click="handleSearch">
+            
+            搜索
+          </el-button>
+          <el-button @click="handleReset">
+            
+            重置
+          </el-button>
         </el-form-item>
       </el-form>
       <el-button type="primary" @click="openDialog('add')" class="add-btn">
+       
         新增小区
-        
       </el-button>
     </el-card>
 
     <!-- 数据表格 -->
     <el-card class="table-card">
+      <div class="table-header">
+        <div class="summary-info">
+          <span>共 <strong>{{ pagination.total }}</strong> 条记录</span>
+          <span class="divider">|</span>
+          <span>正常: <strong>{{ normalCount }}</strong> 条</span>
+          <span class="divider">|</span>
+          <span>停用: <strong>{{ disabledCount }}</strong> 条</span>
+        </div>
+      </div>
+      
       <el-table 
-        :data="tableData" 
+        :data="displayData" 
         border
         stripe
         :loading="loading"
@@ -42,22 +65,22 @@
           </template>
         </el-table-column>
         <el-table-column prop="createTime" label="创建时间" width="180"/>
-        <el-table-column label="操作" width="200" align="center">
+        <el-table-column label="操作" width="150" align="center">
           <template #default="scope">
             <el-button 
               size="small" 
               @click="openDialog('edit', scope.row)"
             >
-              <el-icon>编辑</el-icon>
               
+              编辑
             </el-button>
             <el-button 
               size="small" 
               type="danger"
               @click="handleDelete(scope.row.id)"
             >
-              <el-icon>删除</el-icon>
               
+              删除
             </el-button>
           </template>
         </el-table-column>
@@ -127,8 +150,9 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { Search, RefreshLeft, Plus, Edit, Delete } from '@element-plus/icons-vue'
 import {
   getCommunityList,
   createCommunity,
@@ -138,11 +162,13 @@ import {
 
 // 搜索表单
 const searchForm = reactive({
-  communityName: ''
+  communityName: '',
+  status: ''
 })
 
 // 表格数据
-const tableData = ref([])
+const allData = ref([])  // 存储所有数据
+const tableData = ref([])  // 搜索后的数据
 const loading = ref(false)
 
 // 分页
@@ -184,43 +210,80 @@ const dialogTitle = computed(() => {
   return dialogType.value === 'add' ? '新增小区' : '编辑小区'
 })
 
-// 是否编辑状态
-const isEdit = computed(() => {
-  return dialogType.value === 'edit'
+// 计算统计信息
+const normalCount = computed(() => {
+  return tableData.value.filter(item => item.status === 1).length
 })
+
+const disabledCount = computed(() => {
+  return tableData.value.filter(item => item.status === 0).length
+})
+
+// 当前页显示的数据
+const displayData = computed(() => {
+  const start = (pagination.currentPage - 1) * pagination.pageSize
+  const end = start + pagination.pageSize
+  return tableData.value.slice(start, end)
+})
+
+// 前端搜索过滤
+const filterData = () => {
+  let filtered = [...allData.value]
+  
+  // 小区名称模糊搜索
+  if (searchForm.communityName) {
+    filtered = filtered.filter(item => 
+      item.communityName.toLowerCase().includes(searchForm.communityName.toLowerCase())
+    )
+  }
+  
+  // 状态精确搜索
+  if (searchForm.status !== '') {
+    filtered = filtered.filter(item => 
+      item.status === searchForm.status
+    )
+  }
+  
+  return filtered
+}
+
+// 更新表格数据
+const updateTableData = () => {
+  const filtered = filterData()
+  tableData.value = filtered
+  pagination.total = tableData.value.length
+  pagination.currentPage = 1
+}
 
 // 加载数据
 const loadData = async () => {
   loading.value = true
   try {
-    const params = {
-      page: pagination.currentPage,
-      size: pagination.pageSize,
-      ...searchForm
-    }
-    const res = await getCommunityList(params)
+    const res = await getCommunityList()
     // 后端返回的是数组，直接使用
     if (Array.isArray(res) && res.length > 0) {
-      tableData.value = res
-      pagination.total = res.length
+      allData.value = res
     } else {
       // 使用模拟数据
-      tableData.value = [
+      allData.value = [
         { id: 1, communityName: '阳光小区', communityAddress: '北京市朝阳区阳光路1号', area: 50000, totalBuildings: 10, developer: '阳光地产', propertyCompany: '阳光物业', contactPhone: '010-12345678', status: 1, createTime: '2026-01-01T09:00:00' },
         { id: 2, communityName: '幸福花园', communityAddress: '北京市海淀区幸福街88号', area: 80000, totalBuildings: 15, developer: '幸福集团', propertyCompany: '幸福物业', contactPhone: '010-87654321', status: 1, createTime: '2026-01-02T10:00:00' },
-        { id: 3, communityName: '和谐家园', communityAddress: '北京市西城区和谐路66号', area: 60000, totalBuildings: 12, developer: '和谐地产', propertyCompany: '和谐物业', contactPhone: '010-24681357', status: 0, createTime: '2026-01-03T11:00:00' }
+        { id: 3, communityName: '和谐家园', communityAddress: '北京市西城区和谐路66号', area: 60000, totalBuildings: 12, developer: '和谐地产', propertyCompany: '和谐物业', contactPhone: '010-24681357', status: 0, createTime: '2026-01-03T11:00:00' },
+        { id: 4, communityName: '温馨家园', communityAddress: '北京市东城区温馨巷8号', area: 45000, totalBuildings: 8, developer: '温馨地产', propertyCompany: '温馨物业', contactPhone: '010-98765432', status: 1, createTime: '2026-01-04T14:00:00' }
       ]
-      pagination.total = tableData.value.length
     }
+    
+    updateTableData()
   } catch (error) {
     console.error('加载小区列表失败:', error)
     // 使用模拟数据
-    tableData.value = [
+    allData.value = [
       { id: 1, communityName: '阳光小区', communityAddress: '北京市朝阳区阳光路1号', area: 50000, totalBuildings: 10, developer: '阳光地产', propertyCompany: '阳光物业', contactPhone: '010-12345678', status: 1, createTime: '2026-01-01T09:00:00' },
       { id: 2, communityName: '幸福花园', communityAddress: '北京市海淀区幸福街88号', area: 80000, totalBuildings: 15, developer: '幸福集团', propertyCompany: '幸福物业', contactPhone: '010-87654321', status: 1, createTime: '2026-01-02T10:00:00' },
-      { id: 3, communityName: '和谐家园', communityAddress: '北京市西城区和谐路66号', area: 60000, totalBuildings: 12, developer: '和谐地产', propertyCompany: '和谐物业', contactPhone: '010-24681357', status: 0, createTime: '2026-01-03T11:00:00' }
+      { id: 3, communityName: '和谐家园', communityAddress: '北京市西城区和谐路66号', area: 60000, totalBuildings: 12, developer: '和谐地产', propertyCompany: '和谐物业', contactPhone: '010-24681357', status: 0, createTime: '2026-01-03T11:00:00' },
+      { id: 4, communityName: '温馨家园', communityAddress: '北京市东城区温馨巷8号', area: 45000, totalBuildings: 8, developer: '温馨地产', propertyCompany: '温馨物业', contactPhone: '010-98765432', status: 1, createTime: '2026-01-04T14:00:00' }
     ]
-    pagination.total = tableData.value.length
+    updateTableData()
   } finally {
     loading.value = false
   }
@@ -228,14 +291,14 @@ const loadData = async () => {
 
 // 搜索
 const handleSearch = () => {
-  pagination.currentPage = 1
-  loadData()
+  updateTableData()
 }
 
 // 重置
 const handleReset = () => {
   searchForm.communityName = ''
-  handleSearch()
+  searchForm.status = ''
+  updateTableData()
 }
 
 // 打开弹窗
@@ -249,27 +312,9 @@ const openDialog = (type, row = null) => {
   }
   
   if (type === 'add') {
-    form.id = ''
-    form.communityName = ''
-    form.communityAddress = ''
-    form.area = ''
-    form.totalBuildings = ''
-    form.developer = ''
-    form.propertyCompany = ''
-    form.contactPhone = ''
-    form.status = 1
-    form.description = ''
+    Object.assign(form, { id: '', communityName: '', communityAddress: '', area: '', totalBuildings: '', developer: '', propertyCompany: '', contactPhone: '', status: 1, description: '' })
   } else if (type === 'edit' && row) {
-    form.id = row.id
-    form.communityName = row.communityName
-    form.communityAddress = row.communityAddress
-    form.area = row.area
-    form.totalBuildings = row.totalBuildings
-    form.developer = row.developer
-    form.propertyCompany = row.propertyCompany
-    form.contactPhone = row.contactPhone
-    form.status = row.status
-    form.description = row.description
+    Object.assign(form, row)
   }
 }
 
@@ -327,17 +372,18 @@ const handleDelete = async (id) => {
 // 分页大小改变
 const handleSizeChange = (size) => {
   pagination.pageSize = size
-  loadData()
+  if (pagination.currentPage > Math.ceil(pagination.total / size)) {
+    pagination.currentPage = 1
+  }
 }
 
 // 当前页改变
 const handleCurrentChange = (page) => {
   pagination.currentPage = page
-  loadData()
 }
 
 // 初始化
-loadData()
+onMounted(() => loadData())
 </script>
 
 <style scoped>
@@ -357,7 +403,30 @@ loadData()
   padding: 8px 16px;
   font-size: 14px;
 }
+
 .table-card {
   min-height: 400px;
+}
+
+.table-header {
+  margin-bottom: 15px;
+  padding: 10px 15px;
+  background: #fafafa;
+  border-radius: 4px;
+}
+
+.summary-info {
+  font-size: 14px;
+  color: #666;
+}
+
+.summary-info strong {
+  color: #409EFF;
+  margin: 0 2px;
+}
+
+.divider {
+  margin: 0 10px;
+  color: #ddd;
 }
 </style>

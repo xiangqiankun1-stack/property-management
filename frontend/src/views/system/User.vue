@@ -4,23 +4,41 @@
     <el-card class="search-card">
       <el-form :model="searchForm" inline>
         <el-form-item label="用户名">
-          <el-input v-model="searchForm.username" placeholder="请输入用户名" />
+          <el-input v-model="searchForm.userName" placeholder="请输入用户名" clearable />
         </el-form-item>
+        <!-- <el-form-item label="真实姓名">
+          <el-input v-model="searchForm.fullName" placeholder="请输入真实姓名" clearable />
+        </el-form-item>
+        <el-form-item label="手机号">
+          <el-input v-model="searchForm.phoneNumber" placeholder="请输入手机号" clearable />
+        </el-form-item> -->
         <el-form-item>
-          <el-button type="primary" @click="handleSearch">搜索</el-button>
-          <el-button @click="handleReset">重置</el-button>
+          <el-button type="primary" @click="handleSearch">
+            
+            搜索
+          </el-button>
+          <el-button @click="handleReset">
+            
+            重置
+          </el-button>
         </el-form-item>
       </el-form>
       <el-button type="primary" @click="openDialog('add')" class="add-btn">
-        新增用户
         
+        新增用户
       </el-button>
     </el-card>
 
     <!-- 数据表格 -->
     <el-card class="table-card">
+      <div class="table-header">
+        <div class="summary-info">
+          <span>共 <strong>{{ pagination.total }}</strong> 条记录</span>
+        </div>
+      </div>
+      
       <el-table 
-        :data="tableData" 
+        :data="displayData" 
         border
         stripe
         :loading="loading"
@@ -31,28 +49,23 @@
         <el-table-column prop="fullName" label="真实姓名"/>
         <el-table-column prop="phoneNumber" label="手机号"/>
         <el-table-column prop="description" label="描述"/>
-        <!-- <el-table-column label="状态" width="100" align="center">
-          <template #default="scope">
-            <el-tag type="success">启用</el-tag>
-          </template>
-        </el-table-column> -->
         <el-table-column prop="createTime" label="创建时间" width="180"/>
-        <el-table-column label="操作" width="200" align="center">
+        <el-table-column label="操作" width="150" align="center">
           <template #default="scope">
             <el-button 
               size="small" 
               @click="openDialog('edit', scope.row)"
             >
-              <el-icon>编辑</el-icon>
-              
+             
+              编辑
             </el-button>
             <el-button 
               size="small" 
               type="danger"
               @click="handleDelete(scope.row.id)"
             >
-             <el-icon>删除</el-icon>
-              
+             
+              删除
             </el-button>
           </template>
         </el-table-column>
@@ -114,8 +127,9 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { Search, RefreshLeft, Plus, Edit, Delete } from '@element-plus/icons-vue'
 import {
   getUserList,
   createUser,
@@ -125,10 +139,13 @@ import {
 
 // 搜索表单
 const searchForm = reactive({
-  username: ''
+  userName: '',
+  fullName: '',
+  phoneNumber: ''
 })
 
 // 表格数据
+const allData = ref([])
 const tableData = ref([])
 const loading = ref(false)
 
@@ -181,44 +198,73 @@ const isEdit = computed(() => {
   return dialogType.value === 'edit'
 })
 
+// 当前页显示的数据
+const displayData = computed(() => {
+  const start = (pagination.currentPage - 1) * pagination.pageSize
+  const end = start + pagination.pageSize
+  return tableData.value.slice(start, end)
+})
+
+// 前端搜索过滤
+const filterData = () => {
+  let filtered = [...allData.value]
+  
+  if (searchForm.userName) {
+    filtered = filtered.filter(item => 
+      item.userName.toLowerCase().includes(searchForm.userName.toLowerCase())
+    )
+  }
+  
+  if (searchForm.fullName) {
+    filtered = filtered.filter(item => 
+      item.fullName.toLowerCase().includes(searchForm.fullName.toLowerCase())
+    )
+  }
+  
+  if (searchForm.phoneNumber) {
+    filtered = filtered.filter(item => 
+      item.phoneNumber.includes(searchForm.phoneNumber)
+    )
+  }
+  
+  return filtered
+}
+
+// 更新表格数据
+const updateTableData = () => {
+  const filtered = filterData()
+  tableData.value = filtered
+  pagination.total = tableData.value.length
+  pagination.currentPage = 1
+}
+
 // 加载数据
 const loadData = async () => {
   loading.value = true
   try {
-    console.log('开始加载用户列表...')
-    const params = {
-      page: pagination.currentPage,
-      size: pagination.pageSize,
-      ...searchForm
-    }
-    console.log('请求参数:', params)
-    const res = await getUserList(params)
-    console.log('后端返回数据:', res)
+    const res = await getUserList()
     
-    // 后端返回的是数组，直接使用
     if (Array.isArray(res) && res.length > 0) {
-      tableData.value = res
-      pagination.total = res.length
-      console.log('数据加载成功，共', res.length, '条记录')
+      allData.value = res
     } else {
-      console.warn('后端返回空数据，使用模拟数据')
-      tableData.value = [
+      allData.value = [
         { id: 1, userName: 'admin', fullName: '系统管理员', phoneNumber: '13800000001', description: '系统内置管理员', createTime: '2026-01-01T09:00:00' },
         { id: 2, userName: 'worker01', fullName: '张三', phoneNumber: '13800000002', description: '水电维修师傅', createTime: '2026-01-01T09:00:00' },
-        { id: 3, userName: 'worker02', fullName: '李四', phoneNumber: '13800000003', description: '综合维修师傅', createTime: '2026-01-01T09:00:00' }
+        { id: 3, userName: 'worker02', fullName: '李四', phoneNumber: '13800000003', description: '综合维修师傅', createTime: '2026-01-01T09:00:00' },
+        { id: 4, userName: 'service01', fullName: '王五', phoneNumber: '13800000004', description: '物业客服', createTime: '2026-01-01T09:00:00' }
       ]
-      pagination.total = tableData.value.length
     }
+    
+    updateTableData()
   } catch (error) {
     console.error('加载用户列表失败:', error)
-    console.error('错误详情:', error.message, error.response?.data)
-    // 使用模拟数据
-    tableData.value = [
+    allData.value = [
       { id: 1, userName: 'admin', fullName: '系统管理员', phoneNumber: '13800000001', description: '系统内置管理员', createTime: '2026-01-01T09:00:00' },
       { id: 2, userName: 'worker01', fullName: '张三', phoneNumber: '13800000002', description: '水电维修师傅', createTime: '2026-01-01T09:00:00' },
-      { id: 3, userName: 'worker02', fullName: '李四', phoneNumber: '13800000003', description: '综合维修师傅', createTime: '2026-01-01T09:00:00' }
+      { id: 3, userName: 'worker02', fullName: '李四', phoneNumber: '13800000003', description: '综合维修师傅', createTime: '2026-01-01T09:00:00' },
+      { id: 4, userName: 'service01', fullName: '王五', phoneNumber: '13800000004', description: '物业客服', createTime: '2026-01-01T09:00:00' }
     ]
-    pagination.total = tableData.value.length
+    updateTableData()
   } finally {
     loading.value = false
   }
@@ -226,14 +272,15 @@ const loadData = async () => {
 
 // 搜索
 const handleSearch = () => {
-  pagination.currentPage = 1
-  loadData()
+  updateTableData()
 }
 
 // 重置
 const handleReset = () => {
-  searchForm.username = ''
-  handleSearch()
+  searchForm.userName = ''
+  searchForm.fullName = ''
+  searchForm.phoneNumber = ''
+  updateTableData()
 }
 
 // 打开弹窗
@@ -241,27 +288,14 @@ const openDialog = (type, row = null) => {
   dialogType.value = type
   dialogVisible.value = true
   
-  // 重置表单
   if (formRef.value) {
     formRef.value.resetFields()
   }
   
   if (type === 'add') {
-    form.id = ''
-    form.userName = ''
-    form.password = ''
-    form.fullName = ''
-    form.phoneNumber = ''
-    form.description = ''
-    form.status = 1
+    Object.assign(form, { id: '', userName: '', password: '', fullName: '', phoneNumber: '', description: '', status: 1 })
   } else if (type === 'edit' && row) {
-    form.id = row.id
-    form.userName = row.userName
-    form.password = ''
-    form.fullName = row.fullName
-    form.phoneNumber = row.phoneNumber
-    form.description = row.description
-    form.status = row.status || 1
+    Object.assign(form, { id: row.id, userName: row.userName, password: '', fullName: row.fullName, phoneNumber: row.phoneNumber, description: row.description, status: row.status || 1 })
   }
 }
 
@@ -324,17 +358,18 @@ const handleDelete = async (id) => {
 // 分页大小改变
 const handleSizeChange = (size) => {
   pagination.pageSize = size
-  loadData()
+  if (pagination.currentPage > Math.ceil(pagination.total / size)) {
+    pagination.currentPage = 1
+  }
 }
 
 // 当前页改变
 const handleCurrentChange = (page) => {
   pagination.currentPage = page
-  loadData()
 }
 
 // 初始化
-loadData()
+onMounted(() => loadData())
 </script>
 
 <style scoped>
@@ -357,5 +392,27 @@ loadData()
 
 .table-card {
   min-height: 400px;
+}
+
+.table-header {
+  margin-bottom: 15px;
+  padding: 10px 15px;
+  background: #fafafa;
+  border-radius: 4px;
+}
+
+.summary-info {
+  font-size: 14px;
+  color: #666;
+}
+
+.summary-info strong {
+  color: #409EFF;
+  margin: 0 2px;
+}
+
+.divider {
+  margin: 0 10px;
+  color: #ddd;
 }
 </style>

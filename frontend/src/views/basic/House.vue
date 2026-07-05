@@ -4,10 +4,10 @@
     <el-card class="search-card">
       <el-form :model="searchForm" inline>
         <el-form-item label="房号">
-          <el-input v-model="searchForm.houseNumber" placeholder="请输入房号" />
+          <el-input v-model="searchForm.houseNumber" placeholder="请输入房号" clearable />
         </el-form-item>
         <el-form-item label="所属楼栋">
-          <el-select v-model="searchForm.buildingId" placeholder="请选择楼栋">
+          <el-select v-model="searchForm.buildingId" placeholder="请选择楼栋" clearable>
             <el-option label="全部" value="" />
             <el-option 
               v-for="item in buildingList" 
@@ -18,7 +18,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="状态">
-          <el-select v-model="searchForm.status" placeholder="请选择状态">
+          <el-select v-model="searchForm.status" placeholder="请选择状态" clearable>
             <el-option label="全部" value="" />
             <el-option label="空置" :value="0" />
             <el-option label="已入住" :value="1" />
@@ -26,20 +26,38 @@
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleSearch">搜索</el-button>
-          <el-button @click="handleReset">重置</el-button>
+          <el-button type="primary" @click="handleSearch">
+            <el-icon><Search /></el-icon>
+            搜索
+          </el-button>
+          <el-button @click="handleReset">
+            <el-icon><RefreshLeft /></el-icon>
+            重置
+          </el-button>
         </el-form-item>
       </el-form>
       <el-button type="primary" @click="openDialog('add')" class="add-btn">
-        
+        <el-icon><Plus /></el-icon>
         新增房屋
       </el-button>
     </el-card>
 
     <!-- 数据表格 -->
     <el-card class="table-card">
+      <div class="table-header">
+        <div class="summary-info">
+          <span>共 <strong>{{ pagination.total }}</strong> 条记录</span>
+          <span class="divider">|</span>
+          <span>空置: <strong>{{ vacantCount }}</strong> 条</span>
+          <span class="divider">|</span>
+          <span>已入住: <strong>{{ occupiedCount }}</strong> 条</span>
+          <span class="divider">|</span>
+          <span>已出租: <strong>{{ rentedCount }}</strong> 条</span>
+        </div>
+      </div>
+      
       <el-table 
-        :data="tableData" 
+        :data="displayData" 
         border
         stripe
         :loading="loading"
@@ -61,13 +79,13 @@
           </template>
         </el-table-column>
         <el-table-column prop="createTime" label="创建时间" width="180"/>
-        <el-table-column label="操作" width="200" align="center">
+        <el-table-column label="操作" width="150" align="center">
           <template #default="scope">
             <el-button 
               size="small" 
               @click="openDialog('edit', scope.row)"
             >
-              <el-icon>Edit</el-icon>
+              <el-icon><Edit /></el-icon>
               编辑
             </el-button>
             <el-button 
@@ -75,7 +93,7 @@
               type="danger"
               @click="handleDelete(scope.row.id)"
             >
-              <el-icon>Delete</el-icon>
+              <el-icon><Delete /></el-icon>
               删除
             </el-button>
           </template>
@@ -166,6 +184,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { Search, RefreshLeft, Plus, Edit, Delete } from '@element-plus/icons-vue'
 import {
   getHouseList,
   createHouse,
@@ -188,6 +207,7 @@ const searchForm = reactive({
 })
 
 // 表格数据
+const allData = ref([])
 const tableData = ref([])
 const loading = ref(false)
 
@@ -257,6 +277,67 @@ const getStatusText = (status) => {
   return texts[status] || '未知'
 }
 
+// 计算统计信息
+const vacantCount = computed(() => {
+  return tableData.value.filter(item => item.status === 0).length
+})
+
+const occupiedCount = computed(() => {
+  return tableData.value.filter(item => item.status === 1).length
+})
+
+const rentedCount = computed(() => {
+  return tableData.value.filter(item => item.status === 2).length
+})
+
+// 当前页显示的数据
+const displayData = computed(() => {
+  const start = (pagination.currentPage - 1) * pagination.pageSize
+  const end = start + pagination.pageSize
+  return tableData.value.slice(start, end)
+})
+
+// 前端搜索过滤
+const filterData = () => {
+  let filtered = [...allData.value]
+  
+  if (searchForm.houseNumber) {
+    filtered = filtered.filter(item => 
+      item.houseNumber.toLowerCase().includes(searchForm.houseNumber.toLowerCase())
+    )
+  }
+  
+  if (searchForm.buildingId !== '') {
+    filtered = filtered.filter(item => 
+      item.buildingId === searchForm.buildingId
+    )
+  }
+  
+  if (searchForm.status !== '') {
+    filtered = filtered.filter(item => 
+      item.status === searchForm.status
+    )
+  }
+  
+  return filtered
+}
+
+// 更新表格数据
+const updateTableData = () => {
+  const filtered = filterData()
+  tableData.value = filtered.map(item => {
+    const building = buildingList.value.find(b => b.id === item.buildingId)
+    const community = building ? communityList.value.find(c => c.id === building.communityId) : null
+    return {
+      ...item,
+      buildingName: building ? building.buildingName : '未知楼栋',
+      communityName: community ? community.communityName : '未知小区'
+    }
+  })
+  pagination.total = tableData.value.length
+  pagination.currentPage = 1
+}
+
 // 加载小区列表
 const loadCommunityList = async () => {
   try {
@@ -313,45 +394,29 @@ const handleBuildingChange = (buildingId) => {
 const loadData = async () => {
   loading.value = true
   try {
-    const params = {
-      page: pagination.currentPage,
-      size: pagination.pageSize,
-      ...searchForm
-    }
-    const res = await getHouseList(params)
-    // 后端返回的是数组，直接使用
+    const res = await getHouseList()
+    
     if (Array.isArray(res) && res.length > 0) {
-      // 补充小区和楼栋名称
-      tableData.value = res.map(item => {
-        const building = buildingList.value.find(b => b.id === item.buildingId)
-        const community = building ? communityList.value.find(c => c.id === building.communityId) : null
-        return {
-          ...item,
-          buildingName: building ? building.buildingName : '未知楼栋',
-          communityName: community ? community.communityName : '未知小区'
-        }
-      })
-      pagination.total = res.length
+      allData.value = res
     } else {
-      // 使用模拟数据
-      tableData.value = [
-        { id: 1, communityId: 1, buildingId: 1, communityName: '阳光小区', buildingName: '1号楼', houseNumber: '101', floor: 1, unitNumber: 1, area: 89, houseType: '两室一厅', status: 1, createTime: '2026-01-01T09:00:00' },
-        { id: 2, communityId: 1, buildingId: 1, communityName: '阳光小区', buildingName: '1号楼', houseNumber: '102', floor: 1, unitNumber: 1, area: 105, houseType: '三室一厅', status: 1, createTime: '2026-01-01T09:00:00' },
-        { id: 3, communityId: 1, buildingId: 1, communityName: '阳光小区', buildingName: '1号楼', houseNumber: '201', floor: 2, unitNumber: 1, area: 89, houseType: '两室一厅', status: 0, createTime: '2026-01-01T09:00:00' },
-        { id: 4, communityId: 2, buildingId: 3, communityName: '幸福花园', buildingName: 'A栋', houseNumber: '301', floor: 3, unitNumber: 1, area: 120, houseType: '三室两厅', status: 2, createTime: '2026-01-02T10:00:00' }
+      allData.value = [
+        { id: 1, communityId: 1, buildingId: 1, houseNumber: '101', floor: 1, unitNumber: 1, area: 89, houseType: '两室一厅', status: 1, createTime: '2026-01-01T09:00:00' },
+        { id: 2, communityId: 1, buildingId: 1, houseNumber: '102', floor: 1, unitNumber: 1, area: 105, houseType: '三室一厅', status: 1, createTime: '2026-01-01T09:00:00' },
+        { id: 3, communityId: 1, buildingId: 1, houseNumber: '201', floor: 2, unitNumber: 1, area: 89, houseType: '两室一厅', status: 0, createTime: '2026-01-01T09:00:00' },
+        { id: 4, communityId: 2, buildingId: 3, houseNumber: '301', floor: 3, unitNumber: 1, area: 120, houseType: '三室两厅', status: 2, createTime: '2026-01-02T10:00:00' }
       ]
-      pagination.total = tableData.value.length
     }
+    
+    updateTableData()
   } catch (error) {
     console.error('加载房屋列表失败:', error)
-    // 使用模拟数据
-    tableData.value = [
-      { id: 1, communityId: 1, buildingId: 1, communityName: '阳光小区', buildingName: '1号楼', houseNumber: '101', floor: 1, unitNumber: 1, area: 89, houseType: '两室一厅', status: 1, createTime: '2026-01-01T09:00:00' },
-      { id: 2, communityId: 1, buildingId: 1, communityName: '阳光小区', buildingName: '1号楼', houseNumber: '102', floor: 1, unitNumber: 1, area: 105, houseType: '三室一厅', status: 1, createTime: '2026-01-01T09:00:00' },
-      { id: 3, communityId: 1, buildingId: 1, communityName: '阳光小区', buildingName: '1号楼', houseNumber: '201', floor: 2, unitNumber: 1, area: 89, houseType: '两室一厅', status: 0, createTime: '2026-01-01T09:00:00' },
-      { id: 4, communityId: 2, buildingId: 3, communityName: '幸福花园', buildingName: 'A栋', houseNumber: '301', floor: 3, unitNumber: 1, area: 120, houseType: '三室两厅', status: 2, createTime: '2026-01-02T10:00:00' }
+    allData.value = [
+      { id: 1, communityId: 1, buildingId: 1, houseNumber: '101', floor: 1, unitNumber: 1, area: 89, houseType: '两室一厅', status: 1, createTime: '2026-01-01T09:00:00' },
+      { id: 2, communityId: 1, buildingId: 1, houseNumber: '102', floor: 1, unitNumber: 1, area: 105, houseType: '三室一厅', status: 1, createTime: '2026-01-01T09:00:00' },
+      { id: 3, communityId: 1, buildingId: 1, houseNumber: '201', floor: 2, unitNumber: 1, area: 89, houseType: '两室一厅', status: 0, createTime: '2026-01-01T09:00:00' },
+      { id: 4, communityId: 2, buildingId: 3, houseNumber: '301', floor: 3, unitNumber: 1, area: 120, houseType: '三室两厅', status: 2, createTime: '2026-01-02T10:00:00' }
     ]
-    pagination.total = tableData.value.length
+    updateTableData()
   } finally {
     loading.value = false
   }
@@ -359,8 +424,7 @@ const loadData = async () => {
 
 // 搜索
 const handleSearch = () => {
-  pagination.currentPage = 1
-  loadData()
+  updateTableData()
 }
 
 // 重置
@@ -368,7 +432,7 @@ const handleReset = () => {
   searchForm.houseNumber = ''
   searchForm.buildingId = ''
   searchForm.status = ''
-  handleSearch()
+  updateTableData()
 }
 
 // 打开弹窗
@@ -376,33 +440,14 @@ const openDialog = (type, row = null) => {
   dialogType.value = type
   dialogVisible.value = true
   
-  // 重置表单
   if (formRef.value) {
     formRef.value.resetFields()
   }
   
   if (type === 'add') {
-    form.id = ''
-    form.communityId = ''
-    form.buildingId = ''
-    form.houseNumber = ''
-    form.floor = ''
-    form.unitNumber = ''
-    form.area = ''
-    form.houseType = ''
-    form.status = 0
-    form.description = ''
+    Object.assign(form, { id: '', communityId: '', buildingId: '', houseNumber: '', floor: '', unitNumber: '', area: '', houseType: '', status: 0, description: '' })
   } else if (type === 'edit' && row) {
-    form.id = row.id
-    form.communityId = row.communityId
-    form.buildingId = row.buildingId
-    form.houseNumber = row.houseNumber
-    form.floor = row.floor
-    form.unitNumber = row.unitNumber
-    form.area = row.area
-    form.houseType = row.houseType
-    form.status = row.status
-    form.description = row.description
+    Object.assign(form, { id: row.id, communityId: row.communityId, buildingId: row.buildingId, houseNumber: row.houseNumber, floor: row.floor, unitNumber: row.unitNumber, area: row.area, houseType: row.houseType, status: row.status, description: row.description })
   }
 }
 
@@ -460,13 +505,14 @@ const handleDelete = async (id) => {
 // 分页大小改变
 const handleSizeChange = (size) => {
   pagination.pageSize = size
-  loadData()
+  if (pagination.currentPage > Math.ceil(pagination.total / size)) {
+    pagination.currentPage = 1
+  }
 }
 
 // 当前页改变
 const handleCurrentChange = (page) => {
   pagination.currentPage = page
-  loadData()
 }
 
 // 初始化
@@ -497,5 +543,27 @@ onMounted(() => {
 
 .table-card {
   min-height: 400px;
+}
+
+.table-header {
+  margin-bottom: 15px;
+  padding: 10px 15px;
+  background: #fafafa;
+  border-radius: 4px;
+}
+
+.summary-info {
+  font-size: 14px;
+  color: #666;
+}
+
+.summary-info strong {
+  color: #409EFF;
+  margin: 0 2px;
+}
+
+.divider {
+  margin: 0 10px;
+  color: #ddd;
 }
 </style>

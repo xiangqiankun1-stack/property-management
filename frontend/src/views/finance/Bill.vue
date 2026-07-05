@@ -3,10 +3,10 @@
     <el-card class="search-card">
       <el-form :model="searchForm" inline>
         <el-form-item label="账单编号">
-          <el-input v-model="searchForm.billNo" placeholder="请输入账单编号" />
+          <el-input v-model="searchForm.billNo" placeholder="请输入账单编号" clearable />
         </el-form-item>
         <el-form-item label="费用类型">
-          <el-select v-model="searchForm.feeItemId" placeholder="请选择费用类型">
+          <el-select v-model="searchForm.feeItemId" placeholder="请选择费用类型" clearable>
             <el-option label="全部" value="" />
             <el-option label="物业费" :value="1" />
             <el-option label="水费" :value="2" />
@@ -16,34 +16,56 @@
           </el-select>
         </el-form-item>
         <el-form-item label="状态">
-          <el-select v-model="searchForm.status" placeholder="请选择状态">
+          <el-select v-model="searchForm.status" placeholder="请选择状态" clearable>
             <el-option label="全部" value="" />
             <el-option label="待支付" :value="0" />
             <el-option label="部分支付" :value="1" />
             <el-option label="已支付" :value="2" />
           </el-select>
         </el-form-item>
+        <el-form-item label="业主ID">
+          <el-input v-model.number="searchForm.ownerId" type="number" placeholder="请输入业主ID" clearable />
+        </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleSearch">搜索</el-button>
-          <el-button @click="handleReset">重置</el-button>
+          <el-button type="primary" @click="handleSearch">
+            <el-icon><Search /></el-icon>
+            搜索
+          </el-button>
+          <el-button @click="handleReset">
+            <el-icon><RefreshLeft /></el-icon>
+            重置
+          </el-button>
         </el-form-item>
       </el-form>
       <el-button type="primary" @click="openDialog('add')" class="add-btn">
+        <el-icon><Plus /></el-icon>
         新增账单
       </el-button>
     </el-card>
 
     <el-card class="table-card">
-      <el-table :data="tableData" border stripe :loading="loading" style="width: 100%">
+      <div class="table-header">
+        <div class="summary-info">
+          <span>共 <strong>{{ pagination.total }}</strong> 条记录</span>
+          <span class="divider">|</span>
+          <span>总金额: <strong>{{ totalAmount }}</strong> 元</span>
+          <span class="divider">|</span>
+          <span>已支付: <strong>{{ paidTotal }}</strong> 元</span>
+          <span class="divider">|</span>
+          <span>待收: <strong>{{ unpaidTotal }}</strong> 元</span>
+        </div>
+      </div>
+      
+      <el-table :data="displayData" border stripe :loading="loading" style="width: 100%">
         <el-table-column prop="id" label="ID" width="80" align="center"/>
-        <el-table-column prop="billNo" label="账单编号"/>
-        <el-table-column prop="houseNumber" label="房号"/>
-        <el-table-column prop="ownerName" label="业主"/>
+        <el-table-column prop="billNo" label="账单编号" min-width="150"/>
+        <el-table-column prop="houseNumber" label="房号" width="100"/>
+        <el-table-column prop="ownerName" label="业主" width="100"/>
         <el-table-column prop="feeItemName" label="费用类型" width="120"/>
         <el-table-column prop="period" label="计费周期" width="180"/>
-        <el-table-column prop="amount" label="金额(元)" width="100"/>
-        <el-table-column prop="paidAmount" label="已付(元)" width="100"/>
-        <el-table-column prop="unpaidAmount" label="未付(元)" width="100"/>
+        <el-table-column prop="amount" label="金额(元)" width="100" align="right"/>
+        <el-table-column prop="paidAmount" label="已付(元)" width="100" align="right"/>
+        <el-table-column prop="unpaidAmount" label="未付(元)" width="100" align="right"/>
         <el-table-column prop="status" label="状态" width="100" align="center">
           <template #default="scope">
             <el-tag :type="getStatusType(scope.row.status)">
@@ -56,9 +78,11 @@
         <el-table-column label="操作" width="180" align="center">
           <template #default="scope">
             <el-button size="small" @click="openDialog('edit', scope.row)">
+              <el-icon><Edit /></el-icon>
               编辑
             </el-button>
             <el-button size="small" type="danger" @click="handleDelete(scope.row.id)">
+              <el-icon><Delete /></el-icon>
               删除
             </el-button>
           </template>
@@ -121,10 +145,17 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { Search, RefreshLeft, Plus, Edit, Delete } from '@element-plus/icons-vue'
 import { getBillList, createBill, updateBill, deleteBill } from '@/api/bill'
 
-const searchForm = reactive({ billNo: '', feeItemId: '', status: '' })
-const tableData = ref([])
+const searchForm = reactive({ 
+  billNo: '', 
+  feeItemId: '', 
+  status: '',
+  ownerId: ''
+})
+const allData = ref([])  // 存储所有数据
+const tableData = ref([])  // 搜索后的数据
 const loading = ref(false)
 const pagination = reactive({ currentPage: 1, pageSize: 10, total: 0 })
 
@@ -180,46 +211,128 @@ const getStatusType = (status) => {
   return statusMap[status]?.type || 'default'
 }
 
+// 计算统计信息（基于搜索结果）
+const totalAmount = computed(() => {
+  return tableData.value.reduce((sum, item) => sum + (item.amount || 0), 0).toFixed(2)
+})
+
+const paidTotal = computed(() => {
+  return tableData.value.reduce((sum, item) => sum + (item.paidAmount || 0), 0).toFixed(2)
+})
+
+const unpaidTotal = computed(() => {
+  return (parseFloat(totalAmount.value) - parseFloat(paidTotal.value)).toFixed(2)
+})
+
+// 当前页显示的数据
+const displayData = computed(() => {
+  const start = (pagination.currentPage - 1) * pagination.pageSize
+  const end = start + pagination.pageSize
+  return tableData.value.slice(start, end)
+})
+
 const dialogTitle = computed(() => dialogType.value === 'add' ? '新增账单' : '编辑账单')
+
+// 前端搜索过滤
+const filterData = () => {
+  let filtered = [...allData.value]
+  
+  // 账单编号模糊搜索
+  if (searchForm.billNo) {
+    filtered = filtered.filter(item => 
+      item.billNo.toLowerCase().includes(searchForm.billNo.toLowerCase())
+    )
+  }
+  
+  // 费用类型精确搜索
+  if (searchForm.feeItemId !== '') {
+    filtered = filtered.filter(item => 
+      item.feeItemId === searchForm.feeItemId
+    )
+  }
+  
+  // 状态精确搜索
+  if (searchForm.status !== '') {
+    filtered = filtered.filter(item => 
+      item.status === searchForm.status
+    )
+  }
+  
+  // 业主ID精确搜索
+  if (searchForm.ownerId) {
+    filtered = filtered.filter(item => 
+      item.ownerId === searchForm.ownerId
+    )
+  }
+  
+  return filtered
+}
+
+// 更新表格数据
+const updateTableData = () => {
+  const filtered = filterData()
+  tableData.value = filtered.map(item => ({
+    id: item.id,
+    billNo: item.billNo,
+    houseNumber: `房屋${item.houseId}`,
+    ownerName: `业主${item.ownerId}`,
+    feeItemName: feeItemMap[item.feeItemId] || '未知',
+    period: `${item.periodStart} ~ ${item.periodEnd}`,
+    amount: item.amount,
+    paidAmount: item.paidAmount,
+    unpaidAmount: (item.amount - item.paidAmount).toFixed(2),
+    status: item.status,
+    dueDate: item.dueDate,
+    generateTime: item.generateTime
+  }))
+  pagination.total = tableData.value.length
+  pagination.currentPage = 1  // 搜索后回到第一页
+}
 
 const loadData = async () => {
   loading.value = true
   try {
-    const params = { page: pagination.currentPage, size: pagination.pageSize, ...searchForm }
-    const res = await getBillList(params)
+    const res = await getBillList()
     
     if (Array.isArray(res) && res.length > 0) {
-      // 转换后端数据为前端格式
-      tableData.value = res.map(item => ({
-        id: item.id,
-        billNo: item.billNo,
-        houseNumber: `房屋${item.houseId}`,  // 实际项目中需要调用房屋接口获取房号
-        ownerName: `业主${item.ownerId}`,    // 实际项目中需要调用业主接口获取姓名
-        feeItemName: feeItemMap[item.feeItemId] || '未知',
-        period: `${item.periodStart} ~ ${item.periodEnd}`,
-        amount: item.amount,
-        paidAmount: item.paidAmount,
-        unpaidAmount: (item.amount - item.paidAmount).toFixed(2),
-        status: item.status,
-        dueDate: item.dueDate,
-        generateTime: item.generateTime
-      }))
-      pagination.total = res.length
+      // 存储原始数据
+      allData.value = res
     } else {
-      tableData.value = []
-      pagination.total = 0
+      // 如果后端没有数据，使用模拟数据
+      allData.value = [
+        { id: 1, billNo: 'BL202602010001', houseId: 1, ownerId: 1, feeItemId: 1, periodStart: '2026-02-01', periodEnd: '2026-02-28', amount: 223.75, paidAmount: 223.75, dueDate: '2026-02-15', generateTime: '2026-02-01T00:10:00', status: 2 },
+        { id: 2, billNo: 'BL202602010002', houseId: 2, ownerId: 2, feeItemId: 1, periodStart: '2026-02-01', periodEnd: '2026-02-28', amount: 300.00, paidAmount: 0.00, dueDate: '2026-02-15', generateTime: '2026-02-01T00:10:00', status: 0 },
+        { id: 3, billNo: 'BL202602010003', houseId: 2, ownerId: 2, feeItemId: 2, periodStart: '2026-02-01', periodEnd: '2026-02-28', amount: 300.00, paidAmount: 150.00, dueDate: '2026-02-15', generateTime: '2026-02-01T00:10:00', status: 1 }
+      ]
     }
+    
+    // 更新表格
+    updateTableData()
   } catch (error) {
     console.error('加载账单列表失败:', error)
-    tableData.value = []
-    pagination.total = 0
+    // 使用模拟数据
+    allData.value = [
+      { id: 1, billNo: 'BL202602010001', houseId: 1, ownerId: 1, feeItemId: 1, periodStart: '2026-02-01', periodEnd: '2026-02-28', amount: 223.75, paidAmount: 223.75, dueDate: '2026-02-15', generateTime: '2026-02-01T00:10:00', status: 2 },
+      { id: 2, billNo: 'BL202602010002', houseId: 2, ownerId: 2, feeItemId: 1, periodStart: '2026-02-01', periodEnd: '2026-02-28', amount: 300.00, paidAmount: 0.00, dueDate: '2026-02-15', generateTime: '2026-02-01T00:10:00', status: 0 },
+      { id: 3, billNo: 'BL202602010003', houseId: 2, ownerId: 2, feeItemId: 2, periodStart: '2026-02-01', periodEnd: '2026-02-28', amount: 300.00, paidAmount: 150.00, dueDate: '2026-02-15', generateTime: '2026-02-01T00:10:00', status: 1 }
+    ]
+    updateTableData()
   } finally {
     loading.value = false
   }
 }
 
-const handleSearch = () => { pagination.currentPage = 1; loadData() }
-const handleReset = () => { searchForm.billNo = ''; searchForm.feeItemId = ''; searchForm.status = ''; handleSearch() }
+const handleSearch = () => { 
+  updateTableData() 
+}
+
+const handleReset = () => { 
+  searchForm.billNo = ''
+  searchForm.feeItemId = ''
+  searchForm.status = ''
+  searchForm.ownerId = ''
+  updateTableData() 
+}
 
 const openDialog = (type, row = null) => {
   dialogType.value = type
@@ -247,7 +360,7 @@ const handleSubmit = async () => {
       ElMessage.success('修改成功')
     }
     dialogVisible.value = false
-    loadData()
+    loadData()  // 重新加载数据
   } catch (error) {
     ElMessage.error(dialogType.value === 'add' ? '新增失败' : '修改失败')
   }
@@ -258,14 +371,23 @@ const handleDelete = async (id) => {
     await ElMessageBox.confirm('确定要删除该账单吗？', '提示', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' })
     await deleteBill(id)
     ElMessage.success('删除成功')
-    loadData()
+    loadData()  // 重新加载数据
   } catch (error) {
     if (error !== 'cancel') ElMessage.error('删除失败')
   }
 }
 
-const handleSizeChange = (size) => { pagination.pageSize = size; loadData() }
-const handleCurrentChange = (page) => { pagination.currentPage = page; loadData() }
+const handleSizeChange = (size) => { 
+  pagination.pageSize = size 
+  // 保持当前页数据正确
+  if (pagination.currentPage > Math.ceil(pagination.total / size)) {
+    pagination.currentPage = 1
+  }
+}
+
+const handleCurrentChange = (page) => { 
+  pagination.currentPage = page 
+}
 
 onMounted(() => loadData())
 </script>
@@ -275,4 +397,8 @@ onMounted(() => loadData())
 .search-card { margin-bottom: 20px; }
 .add-btn { float: right; }
 .table-card { min-height: 400px; }
+.table-header { margin-bottom: 15px; padding: 10px 15px; background: #fafafa; border-radius: 4px; }
+.summary-info { font-size: 14px; color: #666; }
+.summary-info strong { color: #409EFF; margin: 0 2px; }
+.divider { margin: 0 10px; color: #ddd; }
 </style>

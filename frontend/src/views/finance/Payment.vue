@@ -19,8 +19,8 @@
         </el-form-item>
       </el-form>
       <el-button type="primary" @click="openDialog('add')" class="add-btn">
-        <el-icon>新增缴费</el-icon>
-        
+        <el-icon>Plus</el-icon>
+        新增缴费
       </el-button>
     </el-card>
 
@@ -43,8 +43,8 @@
         <el-table-column label="操作" width="150" align="center">
           <template #default="scope">
             <el-button size="small" type="danger" @click="handleDelete(scope.row.id)">
-              <el-icon>删除</el-icon>
-              
+              <el-icon>Delete</el-icon>
+              删除
             </el-button>
           </template>
         </el-table-column>

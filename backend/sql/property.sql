@@ -604,3 +604,42 @@ VALUES
     (2, '2026-02-12 09:00:00', '2026-02-12 09:00:00', 4, 4, NULL, '业主先支付部分车位费，剩余月底补齐', 'PAY202602120001', 3, 2, 150.00, 1, '2026-02-12 09:00:00', 4, NULL, 1);
 
 
+-- 为所有表添加 deleted 字段
+ALTER TABLE sys_user_info ADD COLUMN deleted INT DEFAULT 0 COMMENT '逻辑删除标记 0-未删除 1-已删除';
+ALTER TABLE sys_role_info ADD COLUMN deleted INT DEFAULT 0 COMMENT '逻辑删除标记 0-未删除 1-已删除';
+ALTER TABLE sys_permission_info ADD COLUMN deleted INT DEFAULT 0 COMMENT '逻辑删除标记 0-未删除 1-已删除';
+ALTER TABLE sys_user_role ADD COLUMN deleted INT DEFAULT 0 COMMENT '逻辑删除标记 0-未删除 1-已删除';
+ALTER TABLE sys_role_permission ADD COLUMN deleted INT DEFAULT 0 COMMENT '逻辑删除标记 0-未删除 1-已删除';
+ALTER TABLE community ADD COLUMN deleted INT DEFAULT 0 COMMENT '逻辑删除标记 0-未删除 1-已删除';
+ALTER TABLE building ADD COLUMN deleted INT DEFAULT 0 COMMENT '逻辑删除标记 0-未删除 1-已删除';
+ALTER TABLE house ADD COLUMN deleted INT DEFAULT 0 COMMENT '逻辑删除标记 0-未删除 1-已删除';
+ALTER TABLE owner ADD COLUMN deleted INT DEFAULT 0 COMMENT '逻辑删除标记 0-未删除 1-已删除';
+ALTER TABLE bill ADD COLUMN deleted INT DEFAULT 0 COMMENT '逻辑删除标记 0-未删除 1-已删除';
+ALTER TABLE payment_record ADD COLUMN deleted INT DEFAULT 0 COMMENT '逻辑删除标记 0-未删除 1-已删除';
+ALTER TABLE repair ADD COLUMN deleted INT DEFAULT 0 COMMENT '逻辑删除标记 0-未删除 1-已删除';
+ALTER TABLE repair_order ADD COLUMN deleted INT DEFAULT 0 COMMENT '逻辑删除标记 0-未删除 1-已删除';
+ALTER TABLE repair_evaluate ADD COLUMN deleted INT DEFAULT 0 COMMENT '逻辑删除标记 0-未删除 1-已删除';
+ALTER TABLE complaint ADD COLUMN deleted INT DEFAULT 0 COMMENT '逻辑删除标记 0-未删除 1-已删除';
+ALTER TABLE fee_item ADD COLUMN deleted INT DEFAULT 0 COMMENT '逻辑删除标记 0-未删除 1-已删除';
+ALTER TABLE inspection ADD COLUMN deleted INT DEFAULT 0 COMMENT '逻辑删除标记 0-未删除 1-已删除';
+ALTER TABLE inspection_record ADD COLUMN deleted INT DEFAULT 0 COMMENT '逻辑删除标记 0-未删除 1-已删除';
+
+-- 为 deleted 字段创建索引（提升查询性能）
+CREATE INDEX idx_deleted ON sys_user_info(deleted);
+CREATE INDEX idx_deleted ON sys_role_info(deleted);
+CREATE INDEX idx_deleted ON sys_permission_info(deleted);
+CREATE INDEX idx_deleted ON sys_user_role(deleted);
+CREATE INDEX idx_deleted ON sys_role_permission(deleted);
+CREATE INDEX idx_deleted ON community(deleted);
+CREATE INDEX idx_deleted ON building(deleted);
+CREATE INDEX idx_deleted ON house(deleted);
+CREATE INDEX idx_deleted ON owner(deleted);
+CREATE INDEX idx_deleted ON bill(deleted);
+CREATE INDEX idx_deleted ON payment_record(deleted);
+CREATE INDEX idx_deleted ON repair(deleted);
+CREATE INDEX idx_deleted ON repair_order(deleted);
+CREATE INDEX idx_deleted ON repair_evaluate(deleted);
+CREATE INDEX idx_deleted ON complaint(deleted);
+CREATE INDEX idx_deleted ON fee_item(deleted);
+CREATE INDEX idx_deleted ON inspection(deleted);
+CREATE INDEX idx_deleted ON inspection_record(deleted);

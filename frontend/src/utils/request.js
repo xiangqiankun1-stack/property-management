@@ -1,13 +1,16 @@
+// utils/request.js
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 
 const service = axios.create({
-  baseURL: 'http://localhost:8080',
   timeout: 10000
 })
 
 service.interceptors.request.use(
   (config) => {
+    // ✅ 只改这里！
+    config.url = `http://localhost:8080${config.url}`
+    
     const isLogin = config.url.includes('/login') && config.method === 'post';
     
     if (!isLogin) {
@@ -34,7 +37,7 @@ service.interceptors.response.use(
     const isLogin = response.config.url.includes('/login') && response.config.method === 'post';
     
     if (isLogin) {
-      return response.data;
+      return res
     }
 
     if (res.code !== 200) {
@@ -51,6 +54,11 @@ service.interceptors.response.use(
       ElMessage.error('登录已过期，请重新登录')
       localStorage.removeItem('token')
       window.location.href = '/login'
+    } else if (status === 500) {
+      const msg = error.response?.data?.message || '服务器内部错误，请稍后重试'
+      ElMessage.error(msg)
+    } else if (status === 404) {
+      ElMessage.error('接口不存在，请检查路径')
     } else {
       ElMessage.error('网络异常')
     }

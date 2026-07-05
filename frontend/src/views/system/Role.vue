@@ -21,7 +21,7 @@
         </el-form-item>
       </el-form>
       <el-button type="primary" @click="openDialog('add')" class="add-btn">
-       
+        <el-icon><Plus /></el-icon>
         新增角色
       </el-button>
     </el-card>
@@ -46,29 +46,18 @@
         <el-table-column prop="roleCode" label="角色代码"/>
         <el-table-column prop="description" label="描述"/>
         <el-table-column prop="createTime" label="创建时间" width="180"/>
-        <el-table-column label="操作" width="200" align="center">
+        <el-table-column label="操作" width="280" align="center">
           <template #default="scope">
-            <el-button 
-              size="small" 
-              @click="openDialog('edit', scope.row)"
-            >
-             
+            <el-button size="small" @click="openDialog('edit', scope.row)">
+              <el-icon><Edit /></el-icon>
               编辑
             </el-button>
-            <el-button 
-              size="small" 
-              type="primary"
-              @click="handlePermissions(scope.row)"
-            >
-             
+            <el-button size="small" type="primary" @click="handlePermissions(scope.row)">
+              <el-icon><Key /></el-icon>
               权限
             </el-button>
-            <el-button 
-              size="small" 
-              type="danger"
-              @click="handleDelete(scope.row.id)"
-            >
-              
+            <el-button size="small" type="danger" @click="handleDelete(scope.row.id)">
+              <el-icon><Delete /></el-icon>
               删除
             </el-button>
           </template>
@@ -120,26 +109,38 @@
       </template>
     </el-dialog>
 
-    <!-- 权限分配弹窗 -->
+    <!-- 权限分配弹窗 - 平行列表 -->
     <el-dialog 
       v-model="permissionDialogVisible" 
       title="权限分配"
-      width="600px"
+      width="700px"
+      @close="handlePermissionDialogClose"
     >
-      <el-tree
-        :data="permissionTree" 
-        :props="treeProps"
-        show-checkbox
-        default-expand-all
-        :checked-keys="checkedPermissions"
-        @check-change="handleCheckChange"
-      />
+      <div class="permission-tip">
+        <span>当前角色：<strong>{{ currentRoleName }}</strong></span>
+        <span style="margin-left: 20px; color: #999; font-size: 12px;">
+          （勾选表示拥有该权限，取消勾选表示删除该权限）
+        </span>
+      </div>
+      
+      <el-checkbox-group v-model="checkedPermissionIds" class="permission-list">
+        <el-checkbox
+          v-for="item in flatPermissionList"
+          :key="item.id"
+          :label="item.id"
+          class="permission-item"
+        >
+          {{ item.permissionName }}
+        </el-checkbox>
+      </el-checkbox-group>
+      
       <template #footer>
         <el-button @click="permissionDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleSavePermissions">保存</el-button>
+        <el-button type="primary" @click="handleSavePermissions" :loading="savingPermission">
+          保存权限
+        </el-button>
       </template>
     </el-dialog>
-
   </div>
 </template>
 
@@ -153,26 +154,31 @@ import {
   updateRole,
   deleteRole
 } from '@/api/role'
+import {
+  getRolePermissions,
+  getAllPermissions,
+  assignPermissions
+} from '@/api/rolePermission'
 
-// 搜索表单
+// ===== 搜索表单 =====
 const searchForm = reactive({
   roleName: '',
   roleCode: ''
 })
 
-// 表格数据
+// ===== 表格数据 =====
 const allData = ref([])
 const tableData = ref([])
 const loading = ref(false)
 
-// 分页
+// ===== 分页 =====
 const pagination = reactive({
   currentPage: 1,
   pageSize: 10,
   total: 0
 })
 
-// 弹窗
+// ===== 弹窗 =====
 const dialogVisible = ref(false)
 const dialogType = ref('add')
 const formRef = ref(null)
@@ -184,7 +190,7 @@ const form = reactive({
   remark: ''
 })
 
-// 表单验证规则
+// ===== 表单验证规则 =====
 const rules = {
   roleName: [
     { required: true, message: '请输入角色名称', trigger: 'blur' }
@@ -194,52 +200,19 @@ const rules = {
   ]
 }
 
-// 权限分配
+// ===== 权限分配 - 平行列表 =====
 const permissionDialogVisible = ref(false)
 const currentRoleId = ref(null)
-const permissionTree = ref([
-  {
-    id: 1,
-    label: '系统管理',
-    children: [
-      { id: 11, label: '用户管理' },
-      { id: 12, label: '角色管理' }
-    ]
-  },
-  {
-    id: 2,
-    label: '基础数据',
-    children: [
-      { id: 21, label: '小区管理' },
-      { id: 22, label: '楼栋管理' },
-      { id: 23, label: '房屋管理' },
-      { id: 24, label: '业主管理' }
-    ]
-  },
-  {
-    id: 3,
-    label: '服务管理',
-    children: [
-      { id: 31, label: '报修管理' },
-      { id: 32, label: '投诉管理' }
-    ]
-  },
-  {
-    id: 4,
-    label: '财务管理',
-    children: [
-      { id: 41, label: '账单管理' },
-      { id: 42, label: '缴费管理' }
-    ]
-  }
-])
-const treeProps = {
-  children: 'children',
-  label: 'label'
-}
-const checkedPermissions = ref([])
+const currentRoleName = ref('')
+const savingPermission = ref(false)
 
-// 弹窗标题
+// 扁平权限列表（所有权限平铺）
+const flatPermissionList = ref([])
+
+// 当前角色选中的权限ID列表
+const checkedPermissionIds = ref([])
+
+// ===== 计算属性 =====
 const dialogTitle = computed(() => {
   return dialogType.value === 'add' ? '新增角色' : '编辑角色'
 })
@@ -251,42 +224,45 @@ const displayData = computed(() => {
   return tableData.value.slice(start, end)
 })
 
-// 前端搜索过滤
+// ===== 前端搜索过滤 =====
 const filterData = () => {
   let filtered = [...allData.value]
   
   if (searchForm.roleName) {
     filtered = filtered.filter(item => 
-      item.roleName.toLowerCase().includes(searchForm.roleName.toLowerCase())
+      item.roleName && item.roleName.toLowerCase().includes(searchForm.roleName.toLowerCase())
     )
   }
   
   if (searchForm.roleCode) {
     filtered = filtered.filter(item => 
-      item.roleCode.toLowerCase().includes(searchForm.roleCode.toLowerCase())
+      item.roleCode && item.roleCode.toLowerCase().includes(searchForm.roleCode.toLowerCase())
     )
   }
   
   return filtered
 }
 
-// 更新表格数据
+// ===== 更新表格数据 =====
 const updateTableData = () => {
   const filtered = filterData()
   tableData.value = filtered
-  pagination.total = tableData.value.length
+  pagination.total = filtered.length
   pagination.currentPage = 1
 }
 
-// 加载数据
+// ===== 加载角色数据 =====
 const loadData = async () => {
   loading.value = true
   try {
+    console.log('🔵 开始加载角色数据...')
     const res = await getRoleList()
+    console.log('🟢 角色数据:', res)
     
     if (Array.isArray(res) && res.length > 0) {
       allData.value = res
     } else {
+      // 模拟数据
       allData.value = [
         { id: 1, roleName: '管理员', roleCode: 'ADMIN', description: '系统管理员', createTime: '2026-01-01T09:00:00' },
         { id: 2, roleName: '维修人员', roleCode: 'WORKER', description: '维修师傅', createTime: '2026-01-01T09:00:00' },
@@ -297,32 +273,104 @@ const loadData = async () => {
     
     updateTableData()
   } catch (error) {
-    console.error('加载角色列表失败:', error)
-    allData.value = [
-      { id: 1, roleName: '管理员', roleCode: 'ADMIN', description: '系统管理员', createTime: '2026-01-01T09:00:00' },
-      { id: 2, roleName: '维修人员', roleCode: 'WORKER', description: '维修师傅', createTime: '2026-01-01T09:00:00' },
-      { id: 3, roleName: '客服人员', roleCode: 'SERVICE', description: '物业客服', createTime: '2026-01-01T09:00:00' },
-      { id: 4, roleName: '财务人员', roleCode: 'FINANCE', description: '财务人员', createTime: '2026-01-01T09:00:00' }
-    ]
-    updateTableData()
+    console.error('🔴 加载角色列表失败:', error)
+    ElMessage.error('加载角色列表失败')
   } finally {
     loading.value = false
   }
 }
 
-// 搜索
+// ===== 加载扁平权限列表 =====
+const loadFlatPermissions = async () => {
+  console.log('🔵 开始加载权限列表...')
+  
+  try {
+    const res = await getAllPermissions()
+    console.log('🟢 权限原始数据:', res)
+    
+    if (Array.isArray(res) && res.length > 0) {
+      // 过滤掉父节点（目录），只显示叶子节点
+      flatPermissionList.value = res.filter(item => {
+        // 根据你的数据结构调整过滤条件
+        // parentId 不为空表示是子节点（叶子节点）
+        return item.parentId !== null && item.parentId !== undefined && item.parentId !== 0
+      })
+      
+      // 如果过滤后没有数据，显示所有权限
+      if (flatPermissionList.value.length === 0) {
+        flatPermissionList.value = res
+      }
+      
+      console.log('🟢 扁平权限列表:', flatPermissionList.value)
+    } else {
+      // 模拟数据
+      flatPermissionList.value = [
+        { id: 1, permissionName: '用户管理' },
+        { id: 2, permissionName: '角色管理' },
+        { id: 3, permissionName: '新增用户' },
+        { id: 4, permissionName: '小区管理' },
+        { id: 5, permissionName: '楼栋管理' },
+        { id: 6, permissionName: '房屋管理' },
+        { id: 7, permissionName: '业主管理' },
+        { id: 8, permissionName: '报修管理' },
+        { id: 9, permissionName: '投诉管理' },
+        { id: 10, permissionName: '账单管理' },
+        { id: 11, permissionName: '缴费管理' }
+      ]
+    }
+  } catch (error) {
+    console.error('🔴 加载权限列表失败:', error)
+    flatPermissionList.value = [
+      { id: 1, permissionName: '用户管理' },
+      { id: 2, permissionName: '角色管理' },
+      { id: 3, permissionName: '新增用户' },
+      { id: 4, permissionName: '小区管理' },
+      { id: 5, permissionName: '楼栋管理' },
+      { id: 6, permissionName: '房屋管理' },
+      { id: 7, permissionName: '业主管理' },
+      { id: 8, permissionName: '报修管理' },
+      { id: 9, permissionName: '投诉管理' },
+      { id: 10, permissionName: '账单管理' },
+      { id: 11, permissionName: '缴费管理' }
+    ]
+  }
+}
+
+// ===== 加载角色的权限（平行列表）- 去重版 =====
+const loadRolePermissions = async (roleId) => {
+  console.log('🔵 加载角色权限, roleId:', roleId)
+  
+  try {
+    const res = await getRolePermissions(roleId)
+    console.log('🟢 角色权限数据:', res)
+    
+    if (Array.isArray(res)) {
+      // ✅ 去重：使用 Set 去除重复的权限ID
+      const uniqueIds = [...new Set(res.map(item => item.id))]
+      checkedPermissionIds.value = uniqueIds
+      console.log('🟢 选中的权限ID（去重后）:', checkedPermissionIds.value)
+    } else {
+      checkedPermissionIds.value = []
+    }
+  } catch (error) {
+    console.error('🔴 加载角色权限失败:', error)
+    checkedPermissionIds.value = []
+  }
+}
+
+// ===== 搜索 =====
 const handleSearch = () => {
   updateTableData()
 }
 
-// 重置
+// ===== 重置 =====
 const handleReset = () => {
   searchForm.roleName = ''
   searchForm.roleCode = ''
   updateTableData()
 }
 
-// 打开弹窗
+// ===== 打开弹窗 =====
 const openDialog = (type, row = null) => {
   dialogType.value = type
   dialogVisible.value = true
@@ -334,18 +382,24 @@ const openDialog = (type, row = null) => {
   if (type === 'add') {
     Object.assign(form, { id: '', roleName: '', roleCode: '', description: '', remark: '' })
   } else if (type === 'edit' && row) {
-    Object.assign(form, { id: row.id, roleName: row.roleName, roleCode: row.roleCode, description: row.description, remark: row.remark })
+    Object.assign(form, { 
+      id: row.id, 
+      roleName: row.roleName, 
+      roleCode: row.roleCode, 
+      description: row.description, 
+      remark: row.remark 
+    })
   }
 }
 
-// 关闭弹窗
+// ===== 关闭弹窗 =====
 const handleDialogClose = () => {
   if (formRef.value) {
     formRef.value.resetFields()
   }
 }
 
-// 提交表单
+// ===== 提交表单 =====
 const handleSubmit = async () => {
   if (!formRef.value) return
   
@@ -367,11 +421,11 @@ const handleSubmit = async () => {
   }
 }
 
-// 删除
+// ===== 删除角色 =====
 const handleDelete = async (id) => {
   try {
     await ElMessageBox.confirm(
-      '确定要删除该角色吗？',
+      '确定要删除该角色吗？删除后该角色的所有权限关联也将被清理。',
       '提示',
       {
         confirmButtonText: '确定',
@@ -389,25 +443,58 @@ const handleDelete = async (id) => {
   }
 }
 
-// 打开权限分配
-const handlePermissions = (row) => {
+// ===== 打开权限分配 =====
+const handlePermissions = async (row) => {
+  console.log('🔵 打开权限分配, 角色:', row.roleName, 'ID:', row.id)
+  
   currentRoleId.value = row.id
+  currentRoleName.value = row.roleName
   permissionDialogVisible.value = true
-  checkedPermissions.value = [1, 11, 12]
+  
+  // 先加载所有权限（如果还没加载）
+  if (flatPermissionList.value.length === 0) {
+    await loadFlatPermissions()
+  }
+  
+  // 加载角色已有的权限
+  await loadRolePermissions(row.id)
 }
 
-// 权限选择变化
-const handleCheckChange = (data, checked, indeterminate) => {
-  console.log('权限选择变化:', data, checked)
+// ===== 关闭权限弹窗 =====
+const handlePermissionDialogClose = () => {
+  checkedPermissionIds.value = []
+  currentRoleId.value = null
+  currentRoleName.value = ''
 }
 
-// 保存权限
-const handleSavePermissions = () => {
-  ElMessage.success('权限分配成功')
-  permissionDialogVisible.value = false
+// ===== 保存权限（平行列表）- 去重版 =====
+const handleSavePermissions = async () => {
+  if (!currentRoleId.value) return
+  
+  savingPermission.value = true
+  
+  try {
+    // ✅ 去重：使用 Set 去除重复的权限ID
+    const uniqueIds = [...new Set(checkedPermissionIds.value)]
+    
+    console.log('🔵 保存权限, 角色ID:', currentRoleId.value)
+    console.log('🟢 原始选中的权限ID:', checkedPermissionIds.value)
+    console.log('🟢 去重后的权限ID:', uniqueIds)
+    
+    // 调用分配权限接口
+    await assignPermissions(currentRoleId.value, uniqueIds)
+    
+    ElMessage.success('权限分配成功')
+    permissionDialogVisible.value = false
+  } catch (error) {
+    console.error('🔴 权限分配失败:', error)
+    ElMessage.error(error.message || '权限分配失败')
+  } finally {
+    savingPermission.value = false
+  }
 }
 
-// 分页大小改变
+// ===== 分页 =====
 const handleSizeChange = (size) => {
   pagination.pageSize = size
   if (pagination.currentPage > Math.ceil(pagination.total / size)) {
@@ -415,13 +502,17 @@ const handleSizeChange = (size) => {
   }
 }
 
-// 当前页改变
 const handleCurrentChange = (page) => {
   pagination.currentPage = page
 }
 
-// 初始化
-onMounted(() => loadData())
+// ===== 初始化 =====
+onMounted(() => {
+  console.log('🔵 组件挂载完成，开始初始化...')
+  loadData()
+  loadFlatPermissions()
+  console.log('🔵 初始化完成')
+})
 </script>
 
 <style scoped>
@@ -463,8 +554,42 @@ onMounted(() => loadData())
   margin: 0 2px;
 }
 
-.divider {
-  margin: 0 10px;
-  color: #ddd;
+.permission-tip {
+  margin-bottom: 15px;
+  padding: 10px 15px;
+  background: #f5f7fa;
+  border-radius: 4px;
+}
+
+/* 权限列表样式 */
+.permission-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  padding: 10px 0;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.permission-item {
+  width: 140px;
+  margin: 0;
+  padding: 8px 14px;
+  background: #f5f7fa;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.permission-item:hover {
+  background: #e8ecf1;
+}
+
+.permission-item .el-checkbox__label {
+  font-size: 14px;
+  font-weight: normal;
+}
+
+.permission-item .el-checkbox__input {
+  margin-right: 6px;
 }
 </style>

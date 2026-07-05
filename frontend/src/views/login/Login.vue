@@ -3,7 +3,6 @@
     <div class="login-box">
       <div class="login-header">
         <div class="logo-wrap">
-          <!-- 使用 el-icon 内置图标或文字替代 -->
           <span class="logo-text">🏢</span>
         </div>
         <h2>智慧物业管理系统</h2>
@@ -33,17 +32,21 @@
         </el-form-item>
         
         <el-form-item>
-          <el-button type="primary" @click="handleLogin" class="login-btn" size="large">
+          <el-button type="primary" @click="handleLogin" class="login-btn" size="large" :loading="loading">
             登 录
           </el-button>
         </el-form-item>
+        
+        <div style="text-align: center; font-size: 12px; color: #999;">
+          默认账号: admin / 密码: 123456
+        </div>
       </el-form>
     </div>
   </div>
 </template>
 
 <script setup>
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { login } from '@/api/login'
@@ -51,10 +54,11 @@ import { ElMessage } from 'element-plus'
 
 const router = useRouter()
 const userStore = useUserStore()
+const loading = ref(false)
 
 const form = reactive({
-  username: '',
-  password: ''
+  username: 'admin',
+  password: '123456'
 })
 
 const handleLogin = async () => {
@@ -67,21 +71,34 @@ const handleLogin = async () => {
     return
   }
   
+  loading.value = true
+  
   try {
-    const response = await login(form)
+    const res = await login(form)
+    console.log('登录响应:', res)
     
-    if (response && response.code === 200) {
-      localStorage.setItem('token', response.data)
-      userStore.token = response.data
-      
-      ElMessage.success('登录成功')
-      router.push('/dashboard')
+    if (res.code === 200) {
+      const token = res.data
+      if (token) {
+        localStorage.setItem('token', token)
+        userStore.setToken(token)
+        ElMessage.success('登录成功')
+        router.push('/dashboard')
+      } else {
+        ElMessage.error('Token 获取失败')
+      }
     } else {
-      ElMessage.error(response.message || '登录失败')
+      ElMessage.error(res.message || '登录失败')
     }
   } catch (error) {
-    ElMessage.error('登录失败，请检查网络或账号密码')
     console.error('登录失败:', error)
+    if (error.response) {
+      ElMessage.error(error.response.data?.message || `请求失败: ${error.response.status}`)
+    } else {
+      ElMessage.error('网络异常，请检查后端服务是否启动')
+    }
+  } finally {
+    loading.value = false
   }
 }
 </script>

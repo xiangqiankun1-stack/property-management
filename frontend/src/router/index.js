@@ -7,6 +7,11 @@ const routes = [
     name: 'Login',
     component: () => import('@/views/login/Login.vue')
   },
+    {
+    path: '/register',
+    name: 'Register',
+    component: () => import('@/views/login/register.vue')
+  },
   {
     path: '/',
     component: Layout,
@@ -27,21 +32,23 @@ const routes = [
   }
 ]
 
+
+
 const router = createRouter({
   history: createWebHistory(),
   routes
 })
 
-// 路由守卫（使用新写法，不使用 next()）
+// 路由守卫
 router.beforeEach((to) => {
   const token = localStorage.getItem('token')
   
-  // 未登录且访问非登录页，跳转登录
-  if (to.path !== '/login' && !token) {
+  // 未登录且访问非登录/注册页，跳转登录
+  if (to.path !== '/login' && to.path !== '/register' && !token) {
     return '/login'
   } 
-  // 已登录访问登录页，跳转首页
-  if (to.path === '/login' && token) {
+  // 已登录访问登录/注册页，跳转首页
+  if ((to.path === '/login' || to.path === '/register') && token) {
     return '/dashboard'
   }
 })

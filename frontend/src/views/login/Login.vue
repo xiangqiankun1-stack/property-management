@@ -1,9 +1,9 @@
+
 <template>
   <div class="login-container">
     <div class="login-box">
       <div class="login-header">
         <div class="logo-wrap">
-          <!-- 使用 el-icon 内置图标或文字替代 -->
           <span class="logo-text">🏢</span>
         </div>
         <h2>智慧物业管理系统</h2>
@@ -37,6 +37,11 @@
             登 录
           </el-button>
         </el-form-item>
+        
+        <div class="register-link">
+          <span>还没有账户？</span>
+          <a href="/register">立即注册</a>
+        </div>
       </el-form>
     </div>
   </div>
@@ -135,5 +140,22 @@ const handleLogin = async () => {
   width: 100%;
   height: 44px;
   font-size: 16px;
+}
+
+.register-link {
+  text-align: center;
+  margin-top: 20px;
+  color: #666;
+  font-size: 14px;
+}
+
+.register-link a {
+  color: #409EFF;
+  text-decoration: none;
+  margin-left: 5px;
+}
+
+.register-link a:hover {
+  text-decoration: underline;
 }
 </style>

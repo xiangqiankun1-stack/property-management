@@ -20,6 +20,9 @@ public class LoginInterceptor implements HandlerInterceptor {
 
         //token获取
         String token = request.getHeader("Authorization");
+        if (token != null && token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
         try {
             Map<String, Object> claims = JwtUtil.parseToken(token);
             //把业务数据存储到ThreadLocal中

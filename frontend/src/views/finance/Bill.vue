@@ -2,23 +2,25 @@
   <div class="bill-container">
     <el-card class="search-card">
       <el-form :model="searchForm" inline>
-        <el-form-item label="账单名称">
-          <el-input v-model="searchForm.billName" placeholder="请输入账单名称" />
+        <el-form-item label="账单编号">
+          <el-input v-model="searchForm.billNo" placeholder="请输入账单编号" />
         </el-form-item>
-        <el-form-item label="类型">
-          <el-select v-model="searchForm.type" placeholder="请选择类型">
+        <el-form-item label="费用类型">
+          <el-select v-model="searchForm.feeItemId" placeholder="请选择费用类型">
             <el-option label="全部" value="" />
-            <el-option label="物业费" value="物业费" />
-            <el-option label="水费" value="水费" />
-            <el-option label="电费" value="电费" />
-            <el-option label="燃气费" value="燃气费" />
+            <el-option label="物业费" :value="1" />
+            <el-option label="水费" :value="2" />
+            <el-option label="电费" :value="3" />
+            <el-option label="燃气费" :value="4" />
+            <el-option label="停车费" :value="5" />
           </el-select>
         </el-form-item>
         <el-form-item label="状态">
           <el-select v-model="searchForm.status" placeholder="请选择状态">
             <el-option label="全部" value="" />
             <el-option label="待支付" :value="0" />
-            <el-option label="已支付" :value="1" />
+            <el-option label="部分支付" :value="1" />
+            <el-option label="已支付" :value="2" />
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -27,7 +29,6 @@
         </el-form-item>
       </el-form>
       <el-button type="primary" @click="openDialog('add')" class="add-btn">
-        <el-icon>Plus</el-icon>
         新增账单
       </el-button>
     </el-card>
@@ -35,29 +36,29 @@
     <el-card class="table-card">
       <el-table :data="tableData" border stripe :loading="loading" style="width: 100%">
         <el-table-column prop="id" label="ID" width="80" align="center"/>
-        <el-table-column prop="billName" label="账单名称"/>
-        <el-table-column prop="ownerName" label="业主姓名"/>
+        <el-table-column prop="billNo" label="账单编号"/>
         <el-table-column prop="houseNumber" label="房号"/>
-        <el-table-column prop="type" label="类型" width="100"/>
-        <el-table-column prop="amount" label="金额(元)" width="120"/>
+        <el-table-column prop="ownerName" label="业主"/>
+        <el-table-column prop="feeItemName" label="费用类型" width="120"/>
+        <el-table-column prop="period" label="计费周期" width="180"/>
+        <el-table-column prop="amount" label="金额(元)" width="100"/>
+        <el-table-column prop="paidAmount" label="已付(元)" width="100"/>
+        <el-table-column prop="unpaidAmount" label="未付(元)" width="100"/>
         <el-table-column prop="status" label="状态" width="100" align="center">
           <template #default="scope">
-            <el-tag :type="scope.row.status === 1 ? 'success' : 'warning'">
-              {{ scope.row.status === 1 ? '已支付' : '待支付' }}
+            <el-tag :type="getStatusType(scope.row.status)">
+              {{ getStatusText(scope.row.status) }}
             </el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="dueDate" label="到期日期" width="120"/>
-        <el-table-column prop="createTime" label="生成时间" width="180"/>
-        <el-table-column prop="payTime" label="支付时间" width="180"/>
+        <el-table-column prop="generateTime" label="生成时间" width="180"/>
         <el-table-column label="操作" width="180" align="center">
           <template #default="scope">
             <el-button size="small" @click="openDialog('edit', scope.row)">
-              <el-icon>Edit</el-icon>
               编辑
             </el-button>
             <el-button size="small" type="danger" @click="handleDelete(scope.row.id)">
-              <el-icon>Delete</el-icon>
               删除
             </el-button>
           </template>
@@ -78,31 +79,35 @@
 
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="600px" @close="handleDialogClose">
       <el-form :model="form" ref="formRef" :rules="rules" label-width="100px">
-        <el-form-item label="账单名称" prop="billName">
-          <el-input v-model="form.billName" placeholder="请输入账单名称" />
+        <el-form-item label="账单编号" prop="billNo">
+          <el-input v-model="form.billNo" placeholder="请输入账单编号" />
         </el-form-item>
-        <el-form-item label="业主姓名" prop="ownerName">
-          <el-input v-model="form.ownerName" placeholder="请输入业主姓名" />
+        <el-form-item label="房屋ID" prop="houseId">
+          <el-input v-model.number="form.houseId" type="number" placeholder="请输入房屋ID" />
         </el-form-item>
-        <el-form-item label="房号" prop="houseNumber">
-          <el-input v-model="form.houseNumber" placeholder="请输入房号" />
+        <el-form-item label="业主ID" prop="ownerId">
+          <el-input v-model.number="form.ownerId" type="number" placeholder="请输入业主ID" />
         </el-form-item>
-        <el-form-item label="类型" prop="type">
-          <el-select v-model="form.type" placeholder="请选择类型">
-            <el-option label="物业费" value="物业费" />
-            <el-option label="水费" value="水费" />
-            <el-option label="电费" value="电费" />
-            <el-option label="燃气费" value="燃气费" />
+        <el-form-item label="费用类型" prop="feeItemId">
+          <el-select v-model="form.feeItemId" placeholder="请选择费用类型">
+            <el-option label="物业费" :value="1" />
+            <el-option label="水费" :value="2" />
+            <el-option label="电费" :value="3" />
+            <el-option label="燃气费" :value="4" />
+            <el-option label="停车费" :value="5" />
           </el-select>
+        </el-form-item>
+        <el-form-item label="计费周期开始" prop="periodStart">
+          <el-date-picker v-model="form.periodStart" type="date" placeholder="请选择开始日期" />
+        </el-form-item>
+        <el-form-item label="计费周期结束" prop="periodEnd">
+          <el-date-picker v-model="form.periodEnd" type="date" placeholder="请选择结束日期" />
         </el-form-item>
         <el-form-item label="金额(元)" prop="amount">
           <el-input v-model.number="form.amount" type="number" placeholder="请输入金额" />
         </el-form-item>
         <el-form-item label="到期日期" prop="dueDate">
           <el-date-picker v-model="form.dueDate" type="date" placeholder="请选择到期日期" />
-        </el-form-item>
-        <el-form-item label="状态">
-          <el-switch v-model="form.status" :active-value="1" :inactive-value="0" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -118,7 +123,7 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getBillList, createBill, updateBill, deleteBill } from '@/api/bill'
 
-const searchForm = reactive({ billName: '', type: '', status: '' })
+const searchForm = reactive({ billNo: '', feeItemId: '', status: '' })
 const tableData = ref([])
 const loading = ref(false)
 const pagination = reactive({ currentPage: 1, pageSize: 10, total: 0 })
@@ -126,13 +131,53 @@ const pagination = reactive({ currentPage: 1, pageSize: 10, total: 0 })
 const dialogVisible = ref(false)
 const dialogType = ref('add')
 const formRef = ref(null)
-const form = reactive({ id: '', billName: '', ownerName: '', houseNumber: '', type: '物业费', amount: '', dueDate: '', status: 0 })
+const form = reactive({ 
+  id: '', 
+  billNo: '', 
+  houseId: '', 
+  ownerId: '', 
+  feeItemId: 1, 
+  periodStart: '', 
+  periodEnd: '', 
+  amount: '', 
+  dueDate: '',
+  paidAmount: 0,
+  status: 0 
+})
 
 const rules = {
-  billName: [{ required: true, message: '请输入账单名称', trigger: 'blur' }],
-  ownerName: [{ required: true, message: '请输入业主姓名', trigger: 'blur' }],
+  billNo: [{ required: true, message: '请输入账单编号', trigger: 'blur' }],
+  houseId: [{ required: true, message: '请输入房屋ID', trigger: 'blur' }, { type: 'number', message: '必须是数字', trigger: 'blur' }],
+  ownerId: [{ required: true, message: '请输入业主ID', trigger: 'blur' }, { type: 'number', message: '必须是数字', trigger: 'blur' }],
+  feeItemId: [{ required: true, message: '请选择费用类型', trigger: 'blur' }],
+  periodStart: [{ required: true, message: '请选择计费周期开始', trigger: 'blur' }],
+  periodEnd: [{ required: true, message: '请选择计费周期结束', trigger: 'blur' }],
   amount: [{ required: true, message: '请输入金额', trigger: 'blur' }, { type: 'number', min: 0.01, message: '金额必须大于0', trigger: 'blur' }],
-  type: [{ required: true, message: '请选择类型', trigger: 'blur' }]
+  dueDate: [{ required: true, message: '请选择到期日期', trigger: 'blur' }]
+}
+
+// 费用类型映射
+const feeItemMap = {
+  1: '物业费',
+  2: '水费',
+  3: '电费',
+  4: '燃气费',
+  5: '停车费'
+}
+
+// 状态映射
+const statusMap = {
+  0: { text: '待支付', type: 'warning' },
+  1: { text: '部分支付', type: 'info' },
+  2: { text: '已支付', type: 'success' }
+}
+
+const getStatusText = (status) => {
+  return statusMap[status]?.text || '未知'
+}
+
+const getStatusType = (status) => {
+  return statusMap[status]?.type || 'default'
 }
 
 const dialogTitle = computed(() => dialogType.value === 'add' ? '新增账单' : '编辑账单')
@@ -142,39 +187,46 @@ const loadData = async () => {
   try {
     const params = { page: pagination.currentPage, size: pagination.pageSize, ...searchForm }
     const res = await getBillList(params)
+    
     if (Array.isArray(res) && res.length > 0) {
-      tableData.value = res
+      // 转换后端数据为前端格式
+      tableData.value = res.map(item => ({
+        id: item.id,
+        billNo: item.billNo,
+        houseNumber: `房屋${item.houseId}`,  // 实际项目中需要调用房屋接口获取房号
+        ownerName: `业主${item.ownerId}`,    // 实际项目中需要调用业主接口获取姓名
+        feeItemName: feeItemMap[item.feeItemId] || '未知',
+        period: `${item.periodStart} ~ ${item.periodEnd}`,
+        amount: item.amount,
+        paidAmount: item.paidAmount,
+        unpaidAmount: (item.amount - item.paidAmount).toFixed(2),
+        status: item.status,
+        dueDate: item.dueDate,
+        generateTime: item.generateTime
+      }))
       pagination.total = res.length
     } else {
-      tableData.value = [
-        { id: 1, billName: '2026年1月物业费', ownerName: '张三', houseNumber: '1号楼101', type: '物业费', amount: 150.00, status: 1, dueDate: '2026-01-31', createTime: '2026-01-01T00:00:00', payTime: '2026-01-15T10:00:00' },
-        { id: 2, billName: '2026年1月水费', ownerName: '张三', houseNumber: '1号楼101', type: '水费', amount: 35.50, status: 1, dueDate: '2026-01-31', createTime: '2026-01-01T00:00:00', payTime: '2026-01-15T10:00:00' },
-        { id: 3, billName: '2026年1月电费', ownerName: '李四', houseNumber: '2号楼201', type: '电费', amount: 89.00, status: 0, dueDate: '2026-01-31', createTime: '2026-01-01T00:00:00', payTime: '' }
-      ]
-      pagination.total = tableData.value.length
+      tableData.value = []
+      pagination.total = 0
     }
   } catch (error) {
     console.error('加载账单列表失败:', error)
-    tableData.value = [
-      { id: 1, billName: '2026年1月物业费', ownerName: '张三', houseNumber: '1号楼101', type: '物业费', amount: 150.00, status: 1, dueDate: '2026-01-31', createTime: '2026-01-01T00:00:00', payTime: '2026-01-15T10:00:00' },
-      { id: 2, billName: '2026年1月水费', ownerName: '张三', houseNumber: '1号楼101', type: '水费', amount: 35.50, status: 1, dueDate: '2026-01-31', createTime: '2026-01-01T00:00:00', payTime: '2026-01-15T10:00:00' },
-      { id: 3, billName: '2026年1月电费', ownerName: '李四', houseNumber: '2号楼201', type: '电费', amount: 89.00, status: 0, dueDate: '2026-01-31', createTime: '2026-01-01T00:00:00', payTime: '' }
-    ]
-    pagination.total = tableData.value.length
+    tableData.value = []
+    pagination.total = 0
   } finally {
     loading.value = false
   }
 }
 
 const handleSearch = () => { pagination.currentPage = 1; loadData() }
-const handleReset = () => { searchForm.billName = ''; searchForm.type = ''; searchForm.status = ''; handleSearch() }
+const handleReset = () => { searchForm.billNo = ''; searchForm.feeItemId = ''; searchForm.status = ''; handleSearch() }
 
 const openDialog = (type, row = null) => {
   dialogType.value = type
   dialogVisible.value = true
   if (formRef.value) formRef.value.resetFields()
   if (type === 'add') {
-    Object.assign(form, { id: '', billName: '', ownerName: '', houseNumber: '', type: '物业费', amount: '', dueDate: '', status: 0 })
+    Object.assign(form, { id: '', billNo: '', houseId: '', ownerId: '', feeItemId: 1, periodStart: '', periodEnd: '', amount: '', dueDate: '', paidAmount: 0, status: 0 })
   } else if (type === 'edit' && row) {
     Object.assign(form, row)
   }

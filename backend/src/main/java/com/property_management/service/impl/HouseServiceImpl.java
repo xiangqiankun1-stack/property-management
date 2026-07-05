@@ -1,11 +1,12 @@
 package com.property_management.service.impl;
 
-import com.property_management.dao.House;
-import com.property_management.dao.HouseDTO;
-import com.property_management.mapper.HouseMapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.property_management.dao.*;
+import com.property_management.mapper.*;
 import com.property_management.service.HouseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -14,6 +15,15 @@ public class HouseServiceImpl implements HouseService {
 
     @Autowired
     private HouseMapper houseMapper;
+
+    @Autowired
+    private BillMapper billMapper;
+
+    @Autowired
+    private OwnerMapper ownerMapper;
+
+    @Autowired
+    private RepairMapper repairMapper;
 
     @Override
     public List<House> getAll() {
@@ -36,8 +46,29 @@ public class HouseServiceImpl implements HouseService {
     }
 
     @Override
+    @Transactional
     public boolean delete(Long id) {
-        return houseMapper.deleteById(id) >= 0;
+        // 1. 删除关联的账单
+        LambdaQueryWrapper<Bill> billWrapper = new LambdaQueryWrapper<>();
+        billWrapper.eq(Bill::getHouseId, id);
+        billMapper.delete(billWrapper);
+
+        // 2. 解除关联的业主的房屋绑定
+        LambdaQueryWrapper<Owner> ownerWrapper = new LambdaQueryWrapper<>();
+        ownerWrapper.eq(Owner::getHouseId, id);
+        List<Owner> owners = ownerMapper.selectList(ownerWrapper);
+        for (Owner owner : owners) {
+            owner.setHouseId(null);
+            ownerMapper.updateById(owner);
+        }
+
+        // 3. 删除关联的报修
+        LambdaQueryWrapper<Repair> repairWrapper = new LambdaQueryWrapper<>();
+        repairWrapper.eq(Repair::getHouseId, id);
+        repairMapper.delete(repairWrapper);
+
+        // 4. 删除房屋（逻辑删除）
+        return houseMapper.deleteById(id) > 0;
     }
 
     @Override

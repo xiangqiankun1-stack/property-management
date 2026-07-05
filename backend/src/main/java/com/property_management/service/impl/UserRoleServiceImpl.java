@@ -6,6 +6,7 @@ import com.property_management.mapper.UserRoleMapper;
 import com.property_management.service.UserRoleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -17,7 +18,6 @@ public class UserRoleServiceImpl implements UserRoleService {
 
     @Override
     public boolean add(SysUserRole sysUserRole) {
-
         LambdaQueryWrapper<SysUserRole> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(SysUserRole::getUserInfoId, sysUserRole.getUserInfoId())
                 .eq(SysUserRole::getRoleInfoId, sysUserRole.getRoleInfoId());
@@ -25,13 +25,15 @@ public class UserRoleServiceImpl implements UserRoleService {
         Long count = userRoleMapper.selectCount(wrapper);
 
         if (count > 0) {
-            throw new RuntimeException("该用户已拥有此角色，不能重复添加");
+            // 改为返回 false 而不抛出异常，让前端处理
+            return false;
         }
 
         return userRoleMapper.insert(sysUserRole) > 0;
     }
 
     @Override
+    @Transactional
     public boolean delete(Long id) {
         return userRoleMapper.deleteById(id) >= 0;
     }

@@ -6,6 +6,7 @@ import com.property_management.service.ComplaintService;
 import com.property_management.utils.ThreadLocalUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -29,6 +30,9 @@ public class ComplaintServiceImpl implements ComplaintService {
     @Override
     public boolean add(Complaint complaint) {
         Long currentUserId = ThreadLocalUtil.getCurrentUserId();
+        if (currentUserId == null) {
+            currentUserId = 0L;
+        }
         complaint.setOwnerId(currentUserId);
         return complaintMapper.insert(complaint) > 0;
     }
@@ -39,14 +43,20 @@ public class ComplaintServiceImpl implements ComplaintService {
     }
 
     @Override
+    @Transactional
     public boolean delete(Long id) {
+        // 投诉记录没有子表关联，直接删除（逻辑删除）
         return complaintMapper.deleteById(id) >= 0;
     }
 
     @Override
     public boolean handle(Complaint complaint) {
         complaint.setHandleTime(LocalDateTime.now());
-        complaint.setHandleUserId(ThreadLocalUtil.getCurrentUserId());
+        Long currentUserId = ThreadLocalUtil.getCurrentUserId();
+        if (currentUserId == null) {
+            currentUserId = 0L;
+        }
+        complaint.setHandleUserId(currentUserId);
         return complaintMapper.updateById(complaint) > 0;
     }
 }

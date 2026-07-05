@@ -1,10 +1,14 @@
 package com.property_management.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.property_management.dao.Building;
 import com.property_management.dao.Community;
+import com.property_management.mapper.BuildingMapper;
 import com.property_management.mapper.CommunityMapper;
 import com.property_management.service.CommunityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -13,6 +17,9 @@ public class CommunityServiceImpl implements CommunityService {
 
     @Autowired
     private CommunityMapper communityMapper;
+
+    @Autowired
+    private BuildingMapper buildingMapper;
 
     @Override
     public List<Community> getAll() {
@@ -35,7 +42,14 @@ public class CommunityServiceImpl implements CommunityService {
     }
 
     @Override
+    @Transactional
     public boolean delete(Long id) {
+        // 1. 删除关联的楼栋
+        LambdaQueryWrapper<Building> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Building::getCommunityId, id);
+        buildingMapper.delete(wrapper);
+
+        // 2. 删除小区（逻辑删除）
         return communityMapper.deleteById(id) > 0;
     }
 }

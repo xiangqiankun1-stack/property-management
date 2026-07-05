@@ -5,6 +5,7 @@ import com.property_management.mapper.FeeItemMapper;
 import com.property_management.service.FeeItemService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -36,13 +37,11 @@ public class FeeItemServiceImpl implements FeeItemService {
             case 3 -> "元/车位/月";
             default -> "元";
         });
-
         return feeItemMapper.insert(feeItem) > 0;
     }
 
     @Override
     public boolean update(FeeItem feeItem) {
-
         Integer chargeMode = feeItem.getChargeMode();
         if (chargeMode == null) {
             return false;
@@ -53,13 +52,13 @@ public class FeeItemServiceImpl implements FeeItemService {
             case 3 -> "元/车位/月";
             default -> "元";
         });
-
-
         return feeItemMapper.updateById(feeItem) > 0;
     }
 
     @Override
+    @Transactional
     public boolean delete(Long id) {
+        // 费用项目没有子表关联，直接删除（逻辑删除）
         return feeItemMapper.deleteById(id) >= 0;
     }
 }

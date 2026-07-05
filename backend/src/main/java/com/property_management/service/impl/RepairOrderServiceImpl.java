@@ -5,6 +5,7 @@ import com.property_management.mapper.RepairOrderMapper;
 import com.property_management.service.RepairOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -35,7 +36,9 @@ public class RepairOrderServiceImpl implements RepairOrderService {
     }
 
     @Override
+    @Transactional
     public boolean delete(Long id) {
+        // 派单记录没有子表关联，直接删除（逻辑删除）
         return repairOrderMapper.deleteById(id) > 0;
     }
 }

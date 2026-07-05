@@ -4,13 +4,13 @@
     <el-card class="search-card">
       <el-form :model="searchForm" inline>
         <el-form-item label="业主姓名">
-          <el-input v-model="searchForm.ownerName" placeholder="请输入业主姓名" />
+          <el-input v-model="searchForm.ownerName" placeholder="请输入业主姓名" clearable />
         </el-form-item>
-        <el-form-item label="联系电话">
-          <el-input v-model="searchForm.phoneNumber" placeholder="请输入联系电话" />
-        </el-form-item>
+       <!--  <el-form-item label="联系电话">
+          <el-input v-model="searchForm.phoneNumber" placeholder="请输入联系电话" clearable />
+        </el-form-item> -->
         <el-form-item label="与房屋关系">
-          <el-select v-model="searchForm.relationship" placeholder="请选择关系">
+          <el-select v-model="searchForm.relationship" placeholder="请选择关系" clearable>
             <el-option label="全部" value="" />
             <el-option label="业主" value="业主" />
             <el-option label="配偶" value="配偶" />
@@ -19,21 +19,44 @@
             <el-option label="租户" value="租户" />
           </el-select>
         </el-form-item>
+        <el-form-item label="状态">
+          <el-select v-model="searchForm.status" placeholder="请选择状态" clearable>
+            <el-option label="全部" value="" />
+            <el-option label="正常" :value="1" />
+            <el-option label="已迁出" :value="0" />
+          </el-select>
+        </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleSearch">搜索</el-button>
-          <el-button @click="handleReset">重置</el-button>
+          <el-button type="primary" @click="handleSearch">
+            <el-icon><Search /></el-icon>
+            搜索
+          </el-button>
+          <el-button @click="handleReset">
+            <el-icon><RefreshLeft /></el-icon>
+            重置
+          </el-button>
         </el-form-item>
       </el-form>
       <el-button type="primary" @click="openDialog('add')" class="add-btn">
-        
+        <el-icon><Plus /></el-icon>
         新增业主
       </el-button>
     </el-card>
 
     <!-- 数据表格 -->
     <el-card class="table-card">
+      <div class="table-header">
+        <div class="summary-info">
+          <span>共 <strong>{{ pagination.total }}</strong> 条记录</span>
+          <span class="divider">|</span>
+          <span>正常: <strong>{{ normalCount }}</strong> 条</span>
+          <span class="divider">|</span>
+          <span>已迁出: <strong>{{ movedOutCount }}</strong> 条</span>
+        </div>
+      </div>
+      
       <el-table 
-        :data="tableData" 
+        :data="displayData" 
         border
         stripe
         :loading="loading"
@@ -58,14 +81,14 @@
           </template>
         </el-table-column>
         <el-table-column prop="createTime" label="创建时间" width="180"/>
-        <el-table-column label="操作" width="180" align="center">
+        <el-table-column label="操作" width="150" align="center">
           <template #default="scope">
             <el-button size="small" @click="openDialog('edit', scope.row)">
-              <el-icon>Edit</el-icon>
+              <el-icon><Edit /></el-icon>
               编辑
             </el-button>
             <el-button size="small" type="danger" @click="handleDelete(scope.row.id)">
-              <el-icon>Delete</el-icon>
+              <el-icon><Delete /></el-icon>
               删除
             </el-button>
           </template>
@@ -146,6 +169,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { Search, RefreshLeft, Plus, Edit, Delete } from '@element-plus/icons-vue'
 import { getOwnerList, createOwner, updateOwner, deleteOwner } from '@/api/owner'
 import { getHouseList } from '@/api/house'
 
@@ -156,10 +180,12 @@ const houseList = ref([])
 const searchForm = reactive({
   ownerName: '',
   phoneNumber: '',
-  relationship: ''
+  relationship: '',
+  status: ''
 })
 
 // 表格数据
+const allData = ref([])
 const tableData = ref([])
 const loading = ref(false)
 
@@ -197,8 +223,69 @@ const rules = {
 // 弹窗标题
 const dialogTitle = computed(() => dialogType.value === 'add' ? '新增业主' : '编辑业主')
 
-// 根据楼栋过滤房屋（简化，实际应根据小区和楼栋过滤）
+// 根据楼栋过滤房屋
 const filteredHouses = computed(() => houseList.value)
+
+// 计算统计信息
+const normalCount = computed(() => {
+  return tableData.value.filter(item => item.status === 1).length
+})
+
+const movedOutCount = computed(() => {
+  return tableData.value.filter(item => item.status === 0).length
+})
+
+// 当前页显示的数据
+const displayData = computed(() => {
+  const start = (pagination.currentPage - 1) * pagination.pageSize
+  const end = start + pagination.pageSize
+  return tableData.value.slice(start, end)
+})
+
+// 前端搜索过滤
+const filterData = () => {
+  let filtered = [...allData.value]
+  
+  if (searchForm.ownerName) {
+    filtered = filtered.filter(item => 
+      item.ownerName.toLowerCase().includes(searchForm.ownerName.toLowerCase())
+    )
+  }
+  
+  if (searchForm.phoneNumber) {
+    filtered = filtered.filter(item => 
+      item.phoneNumber.includes(searchForm.phoneNumber)
+    )
+  }
+  
+  if (searchForm.relationship) {
+    filtered = filtered.filter(item => 
+      item.relationship === searchForm.relationship
+    )
+  }
+  
+  if (searchForm.status !== '') {
+    filtered = filtered.filter(item => 
+      item.status === searchForm.status
+    )
+  }
+  
+  return filtered
+}
+
+// 更新表格数据
+const updateTableData = () => {
+  const filtered = filterData()
+  tableData.value = filtered.map(item => {
+    const house = houseList.value.find(h => h.id === item.houseId)
+    return {
+      ...item,
+      houseNumber: house ? house.houseNumber : '未知房号'
+    }
+  })
+  pagination.total = tableData.value.length
+  pagination.currentPage = 1
+}
 
 // 加载房屋列表
 const loadHouseList = async () => {
@@ -228,64 +315,46 @@ const loadHouseList = async () => {
 const loadData = async () => {
   loading.value = true
   try {
-    const params = {
-      page: pagination.currentPage,
-      size: pagination.pageSize,
-      ...searchForm
-    }
-    const res = await getOwnerList(params)
+    const res = await getOwnerList()
     
-    if (Array.isArray(res)) {
-      if (res.length > 0) {
-        // 补充房号信息
-        tableData.value = res.map(item => {
-          const house = houseList.value.find(h => h.id === item.houseId)
-          return {
-            ...item,
-            houseNumber: house ? house.houseNumber : '未知房号'
-          }
-        })
-        pagination.total = res.length
-      } else {
-        // 使用模拟数据
-        tableData.value = [
-          { id: 1, ownerName: '刘建国', gender: 1, phoneNumber: '13900000001', idCard: '310101198001011234', houseId: 1, houseNumber: '1号楼101', relationship: '业主', status: 1, createTime: '2026-01-02T10:00:00' },
-          { id: 2, ownerName: '陈美丽', gender: 2, phoneNumber: '13900000002', idCard: '310101198505052345', houseId: 2, houseNumber: '1号楼102', relationship: '业主', status: 1, createTime: '2026-01-02T10:10:00' },
-          { id: 3, ownerName: '赵小龙', gender: 1, phoneNumber: '13900000003', idCard: '310101199212123456', houseId: 3, houseNumber: '2号楼201', relationship: '租户', status: 1, createTime: '2026-01-02T10:20:00' }
-        ]
-        pagination.total = tableData.value.length
-      }
+    if (Array.isArray(res) && res.length > 0) {
+      allData.value = res
     } else {
-      // 使用模拟数据
-      tableData.value = [
-        { id: 1, ownerName: '刘建国', gender: 1, phoneNumber: '13900000001', idCard: '310101198001011234', houseId: 1, houseNumber: '1号楼101', relationship: '业主', status: 1, createTime: '2026-01-02T10:00:00' },
-        { id: 2, ownerName: '陈美丽', gender: 2, phoneNumber: '13900000002', idCard: '310101198505052345', houseId: 2, houseNumber: '1号楼102', relationship: '业主', status: 1, createTime: '2026-01-02T10:10:00' },
-        { id: 3, ownerName: '赵小龙', gender: 1, phoneNumber: '13900000003', idCard: '310101199212123456', houseId: 3, houseNumber: '2号楼201', relationship: '租户', status: 1, createTime: '2026-01-02T10:20:00' }
+      allData.value = [
+        { id: 1, ownerName: '刘建国', gender: 1, phoneNumber: '13900000001', idCard: '310101198001011234', houseId: 1, relationship: '业主', status: 1, createTime: '2026-01-02T10:00:00' },
+        { id: 2, ownerName: '陈美丽', gender: 2, phoneNumber: '13900000002', idCard: '310101198505052345', houseId: 2, relationship: '业主', status: 1, createTime: '2026-01-02T10:10:00' },
+        { id: 3, ownerName: '赵小龙', gender: 1, phoneNumber: '13900000003', idCard: '310101199212123456', houseId: 3, relationship: '租户', status: 1, createTime: '2026-01-02T10:20:00' },
+        { id: 4, ownerName: '王大爷', gender: 1, phoneNumber: '13900000004', idCard: '310101195003034567', houseId: 4, relationship: '业主', status: 0, createTime: '2026-01-02T10:30:00' }
       ]
-      pagination.total = tableData.value.length
     }
+    
+    updateTableData()
   } catch (error) {
     console.error('加载业主列表失败:', error)
-    tableData.value = [
-      { id: 1, ownerName: '刘建国', gender: 1, phoneNumber: '13900000001', idCard: '310101198001011234', houseId: 1, houseNumber: '1号楼101', relationship: '业主', status: 1, createTime: '2026-01-02T10:00:00' },
-      { id: 2, ownerName: '陈美丽', gender: 2, phoneNumber: '13900000002', idCard: '310101198505052345', houseId: 2, houseNumber: '1号楼102', relationship: '业主', status: 1, createTime: '2026-01-02T10:10:00' },
-      { id: 3, ownerName: '赵小龙', gender: 1, phoneNumber: '13900000003', idCard: '310101199212123456', houseId: 3, houseNumber: '2号楼201', relationship: '租户', status: 1, createTime: '2026-01-02T10:20:00' }
+    allData.value = [
+      { id: 1, ownerName: '刘建国', gender: 1, phoneNumber: '13900000001', idCard: '310101198001011234', houseId: 1, relationship: '业主', status: 1, createTime: '2026-01-02T10:00:00' },
+      { id: 2, ownerName: '陈美丽', gender: 2, phoneNumber: '13900000002', idCard: '310101198505052345', houseId: 2, relationship: '业主', status: 1, createTime: '2026-01-02T10:10:00' },
+      { id: 3, ownerName: '赵小龙', gender: 1, phoneNumber: '13900000003', idCard: '310101199212123456', houseId: 3, relationship: '租户', status: 1, createTime: '2026-01-02T10:20:00' },
+      { id: 4, ownerName: '王大爷', gender: 1, phoneNumber: '13900000004', idCard: '310101195003034567', houseId: 4, relationship: '业主', status: 0, createTime: '2026-01-02T10:30:00' }
     ]
-    pagination.total = tableData.value.length
+    updateTableData()
   } finally {
     loading.value = false
   }
 }
 
 // 搜索
-const handleSearch = () => { pagination.currentPage = 1; loadData() }
+const handleSearch = () => {
+  updateTableData()
+}
 
 // 重置
 const handleReset = () => {
   searchForm.ownerName = ''
   searchForm.phoneNumber = ''
   searchForm.relationship = ''
-  handleSearch()
+  searchForm.status = ''
+  updateTableData()
 }
 
 // 打开弹窗
@@ -295,17 +364,7 @@ const openDialog = (type, row = null) => {
   if (formRef.value) formRef.value.resetFields()
   
   if (type === 'add') {
-    Object.assign(form, {
-      id: '',
-      ownerName: '',
-      gender: 1,
-      phoneNumber: '',
-      idCard: '',
-      houseId: '',
-      relationship: '业主',
-      status: 1,
-      remark: ''
-    })
+    Object.assign(form, { id: '', ownerName: '', gender: 1, phoneNumber: '', idCard: '', houseId: '', relationship: '业主', status: 1, remark: '' })
   } else if (type === 'edit' && row) {
     Object.assign(form, row)
   }
@@ -348,10 +407,17 @@ const handleDelete = async (id) => {
 }
 
 // 分页大小改变
-const handleSizeChange = (size) => { pagination.pageSize = size; loadData() }
+const handleSizeChange = (size) => {
+  pagination.pageSize = size
+  if (pagination.currentPage > Math.ceil(pagination.total / size)) {
+    pagination.currentPage = 1
+  }
+}
 
 // 当前页改变
-const handleCurrentChange = (page) => { pagination.currentPage = page; loadData() }
+const handleCurrentChange = (page) => {
+  pagination.currentPage = page
+}
 
 // 初始化
 onMounted(() => {
@@ -374,5 +440,30 @@ onMounted(() => {
   padding: 8px 16px;
   font-size: 14px;
 }
-.table-card { min-height: 400px; }
+
+.table-card { 
+  min-height: 400px; 
+}
+
+.table-header {
+  margin-bottom: 15px;
+  padding: 10px 15px;
+  background: #fafafa;
+  border-radius: 4px;
+}
+
+.summary-info {
+  font-size: 14px;
+  color: #666;
+}
+
+.summary-info strong {
+  color: #409EFF;
+  margin: 0 2px;
+}
+
+.divider {
+  margin: 0 10px;
+  color: #ddd;
+}
 </style>

@@ -26,11 +26,35 @@ public class FeeItemServiceImpl implements FeeItemService {
 
     @Override
     public boolean add(FeeItem feeItem) {
+        Integer chargeMode = feeItem.getChargeMode();
+        if (chargeMode == null) {
+            return false;
+        }
+        feeItem.setUnit(switch (chargeMode) {
+            case 1 -> "元/m²/月";
+            case 2 -> "元/月";
+            case 3 -> "元/车位/月";
+            default -> "元";
+        });
+
         return feeItemMapper.insert(feeItem) > 0;
     }
 
     @Override
     public boolean update(FeeItem feeItem) {
+
+        Integer chargeMode = feeItem.getChargeMode();
+        if (chargeMode == null) {
+            return false;
+        }
+        feeItem.setUnit(switch (chargeMode) {
+            case 1 -> "元/m²/月";
+            case 2 -> "元/月";
+            case 3 -> "元/车位/月";
+            default -> "元";
+        });
+
+
         return feeItemMapper.updateById(feeItem) > 0;
     }
 

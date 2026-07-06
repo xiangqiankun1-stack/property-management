@@ -7,10 +7,16 @@ const routes = [
     name: 'Login',
     component: () => import('@/views/login/Login.vue')
   },
-    {
+  {
     path: '/register',
     name: 'Register',
     component: () => import('@/views/login/register.vue')
+  },
+  // ✅ 用户首页（独立页面，不使用Layout）
+  {
+    path: '/user-home',
+    name: 'UserHome',
+    component: () => import('@/views/user/UserHome.vue')
   },
   {
     path: '/',
@@ -29,27 +35,37 @@ const routes = [
       { path: 'bill', name: 'Bill', component: () => import('@/views/finance/Bill.vue') },
       { path: 'payment', name: 'Payment', component: () => import('@/views/finance/Payment.vue') }
     ]
+  },
+  // ✅ 404 重定向
+  {
+    path: '/:pathMatch(.*)*',
+    redirect: '/dashboard'
   }
 ]
-
-
 
 const router = createRouter({
   history: createWebHistory(),
   routes
 })
 
-// 路由守卫
+// router/index.js
 router.beforeEach((to) => {
   const token = localStorage.getItem('token')
   
   // 未登录且访问非登录/注册页，跳转登录
   if (to.path !== '/login' && to.path !== '/register' && !token) {
     return '/login'
-  } 
+  }
+  
   // 已登录访问登录/注册页，跳转首页
   if ((to.path === '/login' || to.path === '/register') && token) {
-    return '/dashboard'
+    // ✅ 每次都从 localStorage 读取最新的 role
+    const role = localStorage.getItem('role') || 'user'
+    if (role === 'admin') {
+      return '/dashboard'
+    } else {
+      return '/user-home'
+    }
   }
 })
 

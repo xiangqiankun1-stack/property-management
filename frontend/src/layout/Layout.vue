@@ -18,7 +18,6 @@
 
         <el-sub-menu index="1">
           <template #title>
-            
             <span>系统管理</span>
           </template>
           <el-menu-item index="/user">用户管理</el-menu-item>
@@ -27,7 +26,6 @@
 
         <el-sub-menu index="2">
           <template #title>
-           
             <span>基础数据</span>
           </template>
           <el-menu-item index="/community">小区管理</el-menu-item>
@@ -38,7 +36,6 @@
 
         <el-sub-menu index="3">
           <template #title>
-            
             <span>服务管理</span>
           </template>
           <el-menu-item index="/repair">报修管理</el-menu-item>
@@ -47,7 +44,6 @@
 
         <el-sub-menu index="4">
           <template #title>
-            
             <span>财务管理</span>
           </template>
           <el-menu-item index="/bill">账单管理</el-menu-item>
@@ -66,7 +62,6 @@
             @click="handleLogout"
             class="logout-btn"
           >
-            
             <span>退出登录</span>
           </el-button>
         </div>
@@ -82,15 +77,27 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'  // ✅ 添加 ElMessageBox
 
 const router = useRouter()
 const userStore = useUserStore()
 
+// Layout.vue - 退出登录
 const handleLogout = () => {
-  userStore.logout()
-  ElMessage.success('退出成功')
-  router.push('/login')
+  ElMessageBox.confirm('确定要退出登录吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    // ✅ 清除所有登录信息
+    localStorage.removeItem('token')
+    localStorage.removeItem('role')
+    localStorage.removeItem('userInfo')
+    userStore.logout()  // ✅ 清除 store 中的用户信息
+    
+    router.push('/login')
+    ElMessage.success('已退出')
+  }).catch(() => {})
 }
 </script>
 

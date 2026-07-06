@@ -1,4 +1,3 @@
-
 <template>
   <div class="login-container">
     <div class="login-box">
@@ -37,13 +36,10 @@
             登 录
           </el-button>
         </el-form-item>
-        
-
 
         <div class="register-link">
           <span>还没有账户？</span>
           <a href="/register">立即注册</a>
-
         </div>
       </el-form>
     </div>
@@ -66,6 +62,20 @@ const form = reactive({
   password: '123456'
 })
 
+// ===== 解析 JWT Token =====
+const parseJwt = (token) => {
+  try {
+    const base64Url = token.split('.')[1]
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+    const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+    }).join(''))
+    return JSON.parse(jsonPayload)
+  } catch {
+    return {}
+  }
+}
+
 const handleLogin = async () => {
   if (!form.username.trim()) {
     ElMessage.warning('请输入用户名')
@@ -85,10 +95,53 @@ const handleLogin = async () => {
     if (res.code === 200) {
       const token = res.data
       if (token) {
+        // 清除旧角色
+        localStorage.removeItem('role')
+        
+        // 保存 Token
         localStorage.setItem('token', token)
         userStore.setToken(token)
-        ElMessage.success('登录成功')
-        router.push('/dashboard')
+        
+        // ✅ 从 Token 解析用户信息
+        try {
+          const claims = parseJwt(token)
+          console.log('Token 解析结果:', claims)
+          
+          // ✅ 从 claims 中获取角色
+          // 根据你的 Token 结构，claims 包含用户信息
+          const userClaims = claims.claims || claims
+          console.log('用户信息:', userClaims)
+          
+          // ✅ 获取角色（从 claims 中读取 role，如果没有则根据用户名判断）
+          let role = userClaims.role || 'user'
+          
+          // ✅ 如果 Token 中没有 role，根据用户名判断
+          if (!userClaims.role) {
+            const adminUsers = ['admin', '管理员']
+            role = adminUsers.includes(form.username) ? 'admin' : 'user'
+            console.log('根据用户名判断角色:', role)
+          }
+          
+          localStorage.setItem('role', role)
+          console.log('最终角色:', role)
+          
+          ElMessage.success('登录成功')
+          
+          // 根据角色跳转
+          if (role === 'admin') {
+            router.push('/dashboard')
+          } else {
+            router.push('/user-home')
+          }
+        } catch (parseError) {
+          console.warn('Token 解析失败，根据用户名判断角色', parseError)
+          // ✅ 解析失败时根据用户名判断
+          const adminUsers = ['admin', '管理员']
+          const role = adminUsers.includes(form.username) ? 'admin' : 'user'
+          localStorage.setItem('role', role)
+          ElMessage.success('登录成功')
+          router.push(role === 'admin' ? '/dashboard' : '/user-home')
+        }
       } else {
         ElMessage.error('Token 获取失败')
       }

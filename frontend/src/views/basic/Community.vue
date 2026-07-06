@@ -7,10 +7,15 @@
           <el-input v-model="searchForm.communityName" placeholder="请输入小区名称" clearable />
         </el-form-item>
         <el-form-item label="状态">
-          <el-select v-model="searchForm.status" placeholder="请选择状态" clearable>
-            <el-option label="全部" value="" />
-            <el-option label="正常" :value="1" />
-            <el-option label="停用" :value="0" />
+        <el-select 
+          v-model="searchForm.status" 
+          placeholder="选择状态" 
+          clearable
+          style="width: 100px"
+         >
+          <el-option label="全部" value="" />
+          <el-option label="正常" value="1" />
+          <el-option label="停用" value="0" />
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -238,11 +243,11 @@ const filterData = () => {
   }
   
   // 状态精确搜索
-  if (searchForm.status !== '') {
-    filtered = filtered.filter(item => 
-      item.status === searchForm.status
-    )
-  }
+if (searchForm.status !== '') {
+  filtered = filtered.filter(item => 
+    item.status === Number(searchForm.status)  // ✅ 转成数字比较
+  )
+}
   
   return filtered
 }
@@ -626,9 +631,34 @@ onMounted(() => loadData())
   font-weight: 500;
 }
 
-/* 选择器样式 */
-:deep(.el-select .el-input__wrapper) {
-  border-radius: 8px;
+/* 选择器样式 - 强制显示 */
+:deep(.el-select) {
+  width: 100%;
+}
+
+:deep(.el-select .el-input) {
+  display: block;
+}
+
+:deep(.el-select .el-input .el-input__wrapper) {
+  display: flex;
+  align-items: center;
+  min-height: 32px;
+}
+
+:deep(.el-select .el-input .el-input__inner) {
+  display: block;
+  width: 100%;
+  color: #303133 !important;
+  font-size: 14px;
+}
+
+:deep(.el-select .el-input .el-select__caret) {
+  color: #c0c4cc;
+}
+
+:deep(.el-select .el-input.is-focus .el-input__wrapper) {
+  box-shadow: 0 0 0 1px #909399 inset;
 }
 
 /* 日期选择器样式 */
@@ -641,4 +671,9 @@ onMounted(() => loadData())
   border-radius: 8px;
   font-size: 14px;
 }
+
+:deep(.el-select .el-input__inner) {
+  color: #303133 !important;
+}
+
 </style>

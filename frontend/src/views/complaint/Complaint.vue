@@ -9,24 +9,35 @@
           <el-input v-model="searchForm.complaintNo" placeholder="请输入投诉编号" clearable />
         </el-form-item> -->
         <el-form-item label="状态">
-          <el-select v-model="searchForm.status" placeholder="请选择状态" clearable>
-            <el-option label="全部" value="" />
-            <el-option label="待处理" :value="0" />
-            <el-option label="处理中" :value="1" />
-            <el-option label="已处理" :value="2" />
-            <el-option label="已撤销" :value="3" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="投诉类型">
-          <el-select v-model="searchForm.complaintType" placeholder="请选择投诉类型" clearable>
-            <el-option label="全部" value="" />
-            <el-option label="服务态度" :value="1" />
-            <el-option label="环境卫生" :value="2" />
-            <el-option label="安全问题" :value="3" />
-            <el-option label="设施维护" :value="4" />
-            <el-option label="其他" :value="5" />
-          </el-select>
-        </el-form-item>
+        <el-select 
+          v-model="searchForm.status" 
+          placeholder="请选择状态" 
+          clearable
+          style="width: 120px"
+        >
+          <el-option label="全部" value="" />
+          <el-option label="待处理" :value="0" />
+          <el-option label="处理中" :value="1" />
+          <el-option label="已处理" :value="2" />
+          <el-option label="已撤销" :value="3" />
+        </el-select>
+      </el-form-item>
+
+      <el-form-item label="投诉类型">
+        <el-select 
+          v-model="searchForm.complaintType" 
+          placeholder="选择投诉类型" 
+          clearable
+          style="width: 140px"
+        >
+          <el-option label="全部" value="" />
+          <el-option label="服务态度" :value="1" />
+          <el-option label="环境卫生" :value="2" />
+          <el-option label="安全问题" :value="3" />
+          <el-option label="设施维护" :value="4" />
+          <el-option label="其他" :value="5" />
+        </el-select>
+      </el-form-item>
         
         <el-form-item>
           <el-button type="primary" @click="handleSearch">

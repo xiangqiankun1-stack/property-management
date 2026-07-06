@@ -6,23 +6,34 @@
           <el-input v-model="searchForm.repairNo" placeholder="请输入报修编号" clearable />
         </el-form-item>
         <el-form-item label="状态">
-          <el-select v-model="searchForm.status" placeholder="请选择状态" clearable>
-            <el-option label="全部" value="" />
-            <el-option label="待处理" :value="0" />
-            <el-option label="处理中" :value="1" />
-            <el-option label="已完成" :value="2" />
-            <el-option label="已撤销" :value="3" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="报修类型">
-          <el-select v-model="searchForm.repairType" placeholder="请选择报修类型" clearable>
-            <el-option label="全部" value="" />
-            <el-option label="水电" value="水电" />
-            <el-option label="门窗" value="门窗" />
-            <el-option label="设施" value="设施" />
-            <el-option label="其他" value="其他" />
-          </el-select>
-        </el-form-item>
+        <el-select 
+          v-model="searchForm.status" 
+          placeholder="请选择状态" 
+          clearable
+          style="width: 120px"
+        >
+          <el-option label="全部" value="" />
+          <el-option label="待处理" :value="0" />
+          <el-option label="处理中" :value="1" />
+          <el-option label="已完成" :value="2" />
+          <el-option label="已撤销" :value="3" />
+        </el-select>
+      </el-form-item>
+
+      <el-form-item label="报修类型">
+        <el-select 
+          v-model="searchForm.repairType" 
+          placeholder="选择报修类型" 
+          clearable
+          style="width: 140px"
+        >
+          <el-option label="全部" value="" />
+          <el-option label="水电" value="水电" />
+          <el-option label="门窗" value="门窗" />
+          <el-option label="设施" value="设施" />
+          <el-option label="其他" value="其他" />
+        </el-select>
+      </el-form-item>
         <!-- <el-form-item label="业主ID">
           <el-input v-model.number="searchForm.ownerId" type="number" placeholder="请输入业主ID" clearable />
         </el-form-item> -->

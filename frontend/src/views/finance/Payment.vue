@@ -6,22 +6,33 @@
           <el-input v-model="searchForm.paymentNo" placeholder="请输入缴费流水号" clearable />
         </el-form-item>
         <el-form-item label="支付方式">
-          <el-select v-model="searchForm.payMethod" placeholder="请选择支付方式" clearable>
-            <el-option label="全部" value="" />
-            <el-option label="现金" :value="1" />
-            <el-option label="微信" :value="2" />
-            <el-option label="支付宝" :value="3" />
-            <el-option label="银行卡" :value="4" />
-            <el-option label="其他" :value="5" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="状态">
-          <el-select v-model="searchForm.status" placeholder="请选择状态" clearable>
-            <el-option label="全部" value="" />
-            <el-option label="有效" :value="1" />
-            <el-option label="已作废" :value="0" />
-          </el-select>
-        </el-form-item>
+        <el-select 
+          v-model="searchForm.payMethod" 
+          placeholder="请选择支付方式" 
+          clearable
+          style="width: 150px"
+        >
+          <el-option label="全部" value="" />
+          <el-option label="现金" :value="1" />
+          <el-option label="微信" :value="2" />
+          <el-option label="支付宝" :value="3" />
+          <el-option label="银行卡" :value="4" />
+          <el-option label="其他" :value="5" />
+        </el-select>
+      </el-form-item>
+
+      <el-form-item label="状态">
+        <el-select 
+          v-model="searchForm.status" 
+          placeholder="请选择状态" 
+          clearable
+          style="width: 130px"
+        >
+          <el-option label="全部" value="" />
+          <el-option label="有效" :value="1" />
+          <el-option label="已作废" :value="0" />
+        </el-select>
+      </el-form-item>
         <el-form-item label="业主ID">
           <el-input v-model.number="searchForm.ownerId" type="number" placeholder="请输入业主ID" clearable />
         </el-form-item>

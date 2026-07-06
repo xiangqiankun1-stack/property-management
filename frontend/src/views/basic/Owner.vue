@@ -10,22 +10,33 @@
           <el-input v-model="searchForm.phoneNumber" placeholder="请输入联系电话" clearable />
         </el-form-item> -->
         <el-form-item label="与房屋关系">
-          <el-select v-model="searchForm.relationship" placeholder="请选择关系" clearable>
-            <el-option label="全部" value="" />
-            <el-option label="业主" value="业主" />
-            <el-option label="配偶" value="配偶" />
-            <el-option label="子女" value="子女" />
-            <el-option label="父母" value="父母" />
-            <el-option label="租户" value="租户" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="状态">
-          <el-select v-model="searchForm.status" placeholder="请选择状态" clearable>
-            <el-option label="全部" value="" />
-            <el-option label="正常" :value="1" />
-            <el-option label="已迁出" :value="0" />
-          </el-select>
-        </el-form-item>
+        <el-select 
+          v-model="searchForm.relationship" 
+          placeholder="请选择关系" 
+          clearable
+          style="width: 120px"
+        >
+          <el-option label="全部" value="" />
+          <el-option label="业主" value="业主" />
+          <el-option label="配偶" value="配偶" />
+          <el-option label="子女" value="子女" />
+          <el-option label="父母" value="父母" /> 
+          <el-option label="租户" value="租户" />
+        </el-select>
+      </el-form-item>
+
+      <el-form-item label="状态">
+        <el-select 
+          v-model="searchForm.status" 
+          placeholder="请选择状态" 
+          clearable
+          style="width: 120px"
+        >
+          <el-option label="全部" value="" />
+          <el-option label="正常" :value="1" />
+          <el-option label="已迁出" :value="0" />
+        </el-select>
+      </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="handleSearch">
            

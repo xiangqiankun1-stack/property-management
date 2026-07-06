@@ -46,7 +46,7 @@
         <el-table-column prop="roleCode" label="角色代码"/>
         <el-table-column prop="description" label="描述"/>
         <el-table-column prop="createTime" label="创建时间" width="180"/>
-        <el-table-column label="操作" width="280" align="center">
+        <el-table-column label="操作" width="250" align="center">
           <template #default="scope">
             <el-button size="small" @click="openDialog('edit', scope.row)">
              
@@ -65,7 +65,7 @@
       </el-table>
 
       <!-- 分页 -->
-      <el-pagination
+   <!--    <el-pagination
         v-model:current-page="pagination.currentPage"
         v-model:page-size="pagination.pageSize"
         :total="pagination.total"
@@ -74,7 +74,7 @@
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
         style="margin-top: 20px; text-align: right"
-      />
+      /> -->
     </el-card>
 
     <!-- 弹窗表单 -->
@@ -516,80 +516,307 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* 容器样式 */
 .role-container {
-  padding: 20px;
+  padding: 24px;
+  min-height: calc(100vh - 60px);
+  background: linear-gradient(180deg, #f0f4f8 0%, #e8ecef 100%);
 }
 
-.search-card { 
-  margin-bottom: 20px; 
+/* 搜索卡片 */
+.search-card {
+  margin-bottom: 24px;
   position: relative;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  background: white;
 }
 
+.search-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #409EFF 0%, #67C23A 50%, #E6A23C 100%);
+}
+
+/* 新增按钮 */
 .add-btn {
   position: absolute;
-  right: 20px;
-  top: 15px;
-  padding: 8px 16px;
+  right: 24px;
+  top: 20px;
+  padding: 10px 24px;
   font-size: 14px;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.add-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(64, 158, 255, 0.3);
+}
+
+/* 表格卡片 */
 .table-card {
-  min-height: 400px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  background: white;
 }
 
+/* 表格头部信息 */
 .table-header {
-  margin-bottom: 15px;
-  padding: 10px 15px;
-  background: #fafafa;
-  border-radius: 4px;
+  margin-bottom: 20px;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
 }
 
 .summary-info {
   font-size: 14px;
-  color: #666;
+  color: #64748b;
+  font-weight: 500;
 }
 
 .summary-info strong {
   color: #409EFF;
-  margin: 0 2px;
+  margin: 0 4px;
+  font-size: 16px;
+  font-weight: 600;
 }
 
+/* 表格样式优化 */
+:deep(.el-table) {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+:deep(.el-table th) {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  color: #475569;
+  font-weight: 600;
+  padding: 16px 12px;
+  border-bottom: 2px solid #e2e8f0;
+  font-size: 14px;
+}
+
+:deep(.el-table td) {
+  padding: 14px 12px;
+  transition: all 0.2s ease;
+  color: #374151;
+  font-size: 14px;
+}
+
+:deep(.el-table tr:hover td) {
+  background: #f8fafc;
+}
+
+:deep(.el-table--striped .el-table__body tr.el-table__row--striped) {
+  background: #fafbfc;
+}
+
+/* 操作按钮 */
+:deep(.el-table .el-button) {
+  margin-right: 8px;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 12px;
+  transition: all 0.2s ease;
+}
+
+:deep(.el-table .el-button:hover) {
+  transform: translateY(-1px);
+}
+
+:deep(.el-table .el-button:last-child) {
+  margin-right: 0;
+}
+
+/* 分页样式 */
+:deep(.el-pagination) {
+  padding: 20px;
+  background: #fafbfc;
+  border-top: 1px solid #e2e8f0;
+}
+
+:deep(.el-pagination .el-pager li) {
+  border-radius: 6px;
+  margin: 0 4px;
+  min-width: 32px;
+  height: 32px;
+  line-height: 32px;
+}
+
+:deep(.el-pagination .el-pager li.active) {
+  background: #409EFF;
+  color: white;
+}
+
+/* 弹窗样式 */
+:deep(.el-dialog) {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+:deep(.el-dialog__header) {
+  background: linear-gradient(135deg, #409EFF 0%, #3b82f6 100%);
+  padding: 18px 24px;
+}
+
+:deep(.el-dialog__title) {
+  color: white;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+:deep(.el-dialog__headerbtn) {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+:deep(.el-dialog__headerbtn:hover) {
+  color: white;
+}
+
+:deep(.el-dialog__body) {
+  padding: 24px;
+}
+
+/* 表单样式 */
+:deep(.el-form-item) {
+  margin-bottom: 20px;
+}
+
+:deep(.el-form-item__label) {
+  font-weight: 500;
+  color: #475569;
+  font-size: 14px;
+}
+
+:deep(.el-input__wrapper) {
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  box-shadow: none;
+  border-color: #e2e8f0;
+}
+
+:deep(.el-input__wrapper:focus-within) {
+  box-shadow: 0 0 0 3px rgba(64, 158, 255, 0.1);
+  border-color: #409EFF;
+}
+
+:deep(.el-input__inner) {
+  font-size: 14px;
+  padding: 10px 14px;
+}
+
+/* 弹窗按钮 */
+:deep(.el-dialog__footer) {
+  padding: 16px 24px;
+  border-top: 1px solid #e2e8f0;
+}
+
+:deep(.el-dialog__footer .el-button) {
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* 权限分配弹窗 */
 .permission-tip {
-  margin-bottom: 15px;
-  padding: 10px 15px;
-  background: #f5f7fa;
-  border-radius: 4px;
+  margin-bottom: 20px;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-radius: 8px;
+  border-left: 4px solid #f59e0b;
+  font-size: 14px;
+  color: #92400e;
 }
 
-/* 权限列表样式 */
+.permission-tip strong {
+  color: #d97706;
+  font-weight: 600;
+}
+
+/* 权限列表 */
 .permission-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px 20px;
-  padding: 10px 0;
-  max-height: 400px;
+  gap: 14px 24px;
+  padding: 20px;
+  max-height: 420px;
   overflow-y: auto;
+  background: #fafbfc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
 }
 
 .permission-item {
-  width: 140px;
+  width: 150px;
   margin: 0;
-  padding: 8px 14px;
-  background: #f5f7fa;
-  border-radius: 6px;
-  transition: all 0.2s;
+  padding: 12px 16px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
 }
 
 .permission-item:hover {
-  background: #e8ecf1;
+  border-color: #409EFF;
+  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+:deep(.permission-item.is-checked) {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  border-color: #409EFF;
 }
 
 .permission-item .el-checkbox__label {
   font-size: 14px;
-  font-weight: normal;
+  font-weight: 500;
+  color: #374151;
 }
 
 .permission-item .el-checkbox__input {
-  margin-right: 6px;
+  margin-right: 8px;
+}
+
+/* 滚动条样式 */
+:deep(.permission-list::-webkit-scrollbar) {
+  width: 6px;
+}
+
+:deep(.permission-list::-webkit-scrollbar-track) {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+:deep(.permission-list::-webkit-scrollbar-thumb) {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+:deep(.permission-list::-webkit-scrollbar-thumb:hover) {
+  background: #94a3b8;
+}
+
+/* 表单验证错误提示 */
+:deep(.el-form-item__error) {
+  font-size: 12px;
+  color: #ef4444;
+}
+
+/* 按钮禁用状态 */
+:deep(.el-button:disabled) {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 </style>

@@ -73,7 +73,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="createTime" label="创建时间" width="180"/>
-        <el-table-column label="操作" width="150" align="center">
+        <el-table-column label="操作" width="165" align="center">
           <template #default="scope">
             <el-button 
               size="small" 
@@ -435,46 +435,236 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* 容器样式 */
 .building-container {
-  padding: 20px;
+  padding: 24px;
+  min-height: calc(100vh - 60px);
+  background: linear-gradient(180deg, #f0f4f8 0%, #e8ecef 100%);
 }
 
-.search-card { 
-  margin-bottom: 20px; 
+/* 搜索卡片 */
+.search-card {
+  margin-bottom: 24px;
   position: relative;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  background: white;
 }
 
+.search-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #67C23A 0%, #409EFF 50%, #E6A23C 100%);
+}
+
+/* 新增按钮 */
 .add-btn {
   position: absolute;
-  right: 20px;
-  top: 15px;
-  padding: 8px 16px;
+  right: 24px;
+  top: 20px;
+  padding: 10px 24px;
   font-size: 14px;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.add-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(64, 158, 255, 0.3);
+}
+
+/* 表格卡片 */
 .table-card {
-  min-height: 400px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  background: white;
 }
 
+/* 表格头部信息 */
 .table-header {
-  margin-bottom: 15px;
-  padding: 10px 15px;
-  background: #fafafa;
-  border-radius: 4px;
+  margin-bottom: 20px;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
 }
 
 .summary-info {
   font-size: 14px;
-  color: #666;
+  color: #64748b;
+  font-weight: 500;
 }
 
 .summary-info strong {
-  color: #409EFF;
-  margin: 0 2px;
+  color: #67C23A;
+  margin: 0 4px;
+  font-size: 16px;
+  font-weight: 600;
 }
 
 .divider {
   margin: 0 10px;
-  color: #ddd;
+  color: #cbd5e1;
+}
+
+/* 表格样式优化 */
+:deep(.el-table) {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+:deep(.el-table th) {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  color: #475569;
+  font-weight: 600;
+  padding: 16px 12px;
+  border-bottom: 2px solid #e2e8f0;
+  font-size: 14px;
+}
+
+:deep(.el-table td) {
+  padding: 14px 12px;
+  transition: all 0.2s ease;
+  color: #374151;
+  font-size: 14px;
+}
+
+:deep(.el-table tr:hover td) {
+  background: #f8fafc;
+}
+
+:deep(.el-table--striped .el-table__body tr.el-table__row--striped) {
+  background: #fafbfc;
+}
+
+/* 操作按钮 */
+:deep(.el-table .el-button) {
+  margin-right: 12px;
+  border-radius: 6px;
+  padding: 6px 16px;
+  font-size: 12px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+:deep(.el-table .el-button:hover) {
+  transform: translateY(-1px);
+}
+
+:deep(.el-table .el-button:last-child) {
+  margin-right: 0;
+}
+
+/* 操作列容器 */
+:deep(.el-table .cell) {
+  padding: 8px 0;
+}
+
+/* 分页样式 */
+:deep(.el-pagination) {
+  padding: 20px;
+  background: #fafbfc;
+  border-top: 1px solid #e2e8f0;
+}
+
+:deep(.el-pagination .el-pager li) {
+  border-radius: 6px;
+  margin: 0 4px;
+  min-width: 32px;
+  height: 32px;
+  line-height: 32px;
+}
+
+:deep(.el-pagination .el-pager li.active) {
+  background: #67C23A;
+  color: white;
+}
+
+/* 弹窗样式 */
+:deep(.el-dialog) {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+:deep(.el-dialog__header) {
+  background: linear-gradient(135deg, #67C23A 0%, #52c41a 100%);
+  padding: 18px 24px;
+}
+
+:deep(.el-dialog__title) {
+  color: white;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+:deep(.el-dialog__headerbtn) {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+:deep(.el-dialog__headerbtn:hover) {
+  color: white;
+}
+
+:deep(.el-dialog__body) {
+  padding: 24px;
+}
+
+/* 表单样式 */
+:deep(.el-form-item) {
+  margin-bottom: 20px;
+}
+
+:deep(.el-form-item__label) {
+  font-weight: 500;
+  color: #475569;
+  font-size: 14px;
+}
+
+:deep(.el-input__wrapper) {
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  box-shadow: none;
+  border-color: #e2e8f0;
+}
+
+:deep(.el-input__wrapper:focus-within) {
+  box-shadow: 0 0 0 3px rgba(103, 194, 58, 0.1);
+  border-color: #67C23A;
+}
+
+:deep(.el-input__inner) {
+  font-size: 14px;
+  padding: 10px 14px;
+}
+
+/* 弹窗按钮 */
+:deep(.el-dialog__footer) {
+  padding: 16px 24px;
+  border-top: 1px solid #e2e8f0;
+}
+
+:deep(.el-dialog__footer .el-button) {
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* 选择器样式 */
+:deep(.el-select .el-input__wrapper) {
+  border-radius: 8px;
+}
+
+/* 开关样式 */
+:deep(.el-switch) {
+  margin-top: 4px;
 }
 </style>

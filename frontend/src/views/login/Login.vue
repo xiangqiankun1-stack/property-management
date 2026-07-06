@@ -39,11 +39,11 @@
         </el-form-item>
         
 
-=======
+
         <div class="register-link">
           <span>还没有账户？</span>
           <a href="/register">立即注册</a>
->>>>>>> e687003f3e2ac66486cef13d634578d32c90396a
+
         </div>
       </el-form>
     </div>

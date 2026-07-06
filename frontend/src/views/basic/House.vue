@@ -686,23 +686,39 @@ onMounted(async () => {
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
 }
 
+/* 弹窗标题样式优化 */
 :deep(.el-dialog__header) {
-  background: linear-gradient(135deg, #13C2C2 0%, #0d9494 100%);
+  background: linear-gradient(135deg, #a2a4a5 0%, #e1d1d1 100%);
   padding: 18px 24px;
+  display: flex;
+  justify-content: center;  /* ✅ 标题居中 */
+  align-items: center;
+  position: relative;
 }
 
 :deep(.el-dialog__title) {
   color: white;
-  font-weight: 600;
-  font-size: 16px;
+  font-weight: 700;  /* ✅ 字体加粗 */
+  font-size: 18px;  /* ✅ 稍微大一点 */
+  letter-spacing: 1px;  /* ✅ 字间距 */
 }
 
+/* 关闭按钮（X）位置微调 */
 :deep(.el-dialog__headerbtn) {
-  color: rgba(255, 255, 255, 0.8);
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #333 !important;
+  font-size: 20px;
 }
 
 :deep(.el-dialog__headerbtn:hover) {
-  color: white;
+  color: black;
+}
+
+:deep(.el-dialog__headerbtn .el-dialog__close) {
+  font-weight: 1000;  /* ✅ X 按钮加粗 */
 }
 
 :deep(.el-dialog__body) {

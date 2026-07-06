@@ -103,9 +103,9 @@
 
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="600px" @close="handleDialogClose">
       <el-form :model="form" ref="formRef" :rules="rules" label-width="100px">
-        <el-form-item label="账单编号" prop="billNo">
+        <!-- <el-form-item label="账单编号" prop="billNo">
           <el-input v-model="form.billNo" placeholder="请输入账单编号" />
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="房屋ID" prop="houseId">
           <el-input v-model.number="form.houseId" type="number" placeholder="请输入房屋ID" />
         </el-form-item>

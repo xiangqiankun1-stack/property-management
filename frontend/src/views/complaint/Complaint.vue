@@ -113,9 +113,9 @@
 
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="600px" @close="handleDialogClose">
       <el-form :model="form" ref="formRef" :rules="rules" label-width="100px">
-        <el-form-item label="投诉编号" prop="complaintNo">
+       <!--  <el-form-item label="投诉编号" prop="complaintNo">
           <el-input v-model="form.complaintNo" placeholder="请输入投诉编号" />
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="业主ID" prop="ownerId">
           <el-input v-model.number="form.ownerId" type="number" placeholder="请输入业主ID" />
         </el-form-item>
@@ -135,7 +135,7 @@
           <el-input v-model="form.complaintTitle" placeholder="请输入投诉标题" />
         </el-form-item>
         <el-form-item label="投诉内容" prop="complaintContent">
-          <el-textarea v-model="form.complaintContent" placeholder="请输入投诉内容" :rows="3" />
+          <el-input v-model="form.complaintContent" type="textarea" placeholder="请输入投诉内容" :rows="4" />
         </el-form-item>
         <el-form-item label="联系电话" prop="contactPhone">
           <el-input v-model="form.contactPhone" placeholder="请输入联系电话" />
@@ -196,15 +196,15 @@ const dialogVisible = ref(false)
 const dialogType = ref('add')
 const formRef = ref(null)
 const form = reactive({ 
-  id: '', 
+  id: null, 
   complaintNo: '', 
-  ownerId: '', 
+  ownerId: null, 
   complaintType: 1, 
   complaintCategory: '', 
   complaintTitle: '', 
   complaintContent: '', 
   contactPhone: '', 
-  handleUserId: '', 
+  handleUserId: null, 
   handleTime: '', 
   handleResult: '',
   satisfaction: 0,
@@ -626,6 +626,62 @@ onMounted(() => loadData())
 :deep(.el-input__inner) {
   font-size: 14px;
   padding: 10px 14px;
+}
+
+/* 文本域样式 */
+:deep(.el-textarea) {
+  width: 100% !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+:deep(.el-textarea__wrapper) {
+  border-radius: 8px !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: none !important;
+  transition: all 0.2s ease;
+  min-height: 120px !important;
+  background: #ffffff !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+:deep(.el-textarea__wrapper:hover) {
+  border-color: #cbd5e1 !important;
+}
+
+:deep(.el-textarea__wrapper.is-focus) {
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1) !important;
+  border-color: #E74C3C !important;
+}
+
+:deep(.el-textarea__inner) {
+  font-size: 14px !important;
+  padding: 12px 14px !important;
+  border-radius: 8px !important;
+  border: none !important;
+  transition: all 0.2s ease !important;
+  min-height: 100px !important;
+  resize: vertical !important;
+  background: transparent !important;
+  color: #374151 !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  cursor: text !important;
+}
+
+:deep(.el-textarea__inner:focus) {
+  outline: none !important;
+}
+
+:deep(.el-textarea__inner::placeholder) {
+  color: #9ca3af !important;
 }
 
 /* 弹窗按钮 */

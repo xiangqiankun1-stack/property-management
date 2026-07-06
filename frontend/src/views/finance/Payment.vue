@@ -91,9 +91,9 @@
 
     <el-dialog v-model="dialogVisible" title="新增缴费" width="500px" @close="handleDialogClose">
       <el-form :model="form" ref="formRef" :rules="rules" label-width="100px">
-        <el-form-item label="缴费流水号" prop="paymentNo">
+       <!--  <el-form-item label="缴费流水号" prop="paymentNo">
           <el-input v-model="form.paymentNo" placeholder="请输入缴费流水号" />
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="账单ID" prop="billId">
           <el-input v-model.number="form.billId" type="number" placeholder="请输入账单ID" />
         </el-form-item>

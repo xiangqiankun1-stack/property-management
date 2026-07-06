@@ -101,12 +101,12 @@
 
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="600px" @close="handleDialogClose">
       <el-form :model="form" ref="formRef" :rules="rules" label-width="100px">
-        <el-form-item label="报修编号" prop="repairNo">
+        <!-- <el-form-item label="报修编号" prop="repairNo">
           <el-input v-model="form.repairNo" placeholder="请输入报修编号" />
-        </el-form-item>
-        <el-form-item label="业主ID" prop="ownerId">
+        </el-form-item> -->
+        <!-- <el-form-item label="业主ID" prop="ownerId">
           <el-input v-model.number="form.ownerId" type="number" placeholder="请输入业主ID" />
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="房屋ID" prop="houseId">
           <el-input v-model.number="form.houseId" type="number" placeholder="请输入房屋ID" />
         </el-form-item>

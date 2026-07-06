@@ -30,6 +30,11 @@ public class PaymentRecordServiceImpl implements PaymentRecordService {
 
     @Override
     public boolean add(PaymentRecord paymentRecord) {
+        // 自动生成缴费流水号：P + yyyyMMddHHmmss + 4位随机数
+        String paymentNo = "P" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
+                + String.format("%04d", new Random().nextInt(10000));
+        paymentRecord.setPaymentNo(paymentNo);
+
         // 自动生成第三方支付流水号/凭证号：V + yyyyMMddHHmmss + 4位随机数
         String voucherNo = "V" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
                 + String.format("%04d", new Random().nextInt(10000));

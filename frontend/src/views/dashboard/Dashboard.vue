@@ -31,13 +31,17 @@
 <script setup>
 import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import * as echarts from 'echarts'
+import { getRepairList } from '@/api/repair'
+import { getComplaintList } from '@/api/complaint'
+import { getOwnerList } from '@/api/owner'
+import { getPaymentList } from '@/api/payment'
 
 // 统计数据
 const summaryList = reactive([
-  { title: '报修总数', value: 156, icon: 'Wrench', iconClass: 'icon-blue' },
-  { title: '投诉总数', value: 89, icon: 'Message', iconClass: 'icon-red' },
-  { title: '业主总数', value: 1258, icon: 'User', iconClass: 'icon-green' },
-  { title: '缴费金额', value: '¥128,650', icon: 'Wallet', iconClass: 'icon-yellow' }
+  { title: '报修总数', value: '--', icon: 'Wrench', iconClass: 'icon-blue' },
+  { title: '投诉总数', value: '--', icon: 'Message', iconClass: 'icon-red' },
+  { title: '业主总数', value: '--', icon: 'User', iconClass: 'icon-green' },
+  { title: '缴费金额', value: '--', icon: 'Wallet', iconClass: 'icon-yellow' }
 ])
 
 // 图表引用
@@ -49,7 +53,60 @@ let repairChart = null
 let complaintChart = null
 let paymentChart = null
 
-// 加载报修趋势图表（使用模拟数据）
+// 加载统计数据（从现有业务接口获取）
+const loadStats = async () => {
+  // 并行请求多个接口
+  const promises = [
+    getRepairList(),
+    getComplaintList(),
+    getOwnerList(),
+    getPaymentList()
+  ]
+  
+  try {
+    const [repairRes, complaintRes, ownerRes, paymentRes] = await Promise.all(promises)
+    
+    // 报修总数
+    if (Array.isArray(repairRes)) {
+      summaryList[0].value = repairRes.length
+    } else if (repairRes && repairRes.data && Array.isArray(repairRes.data)) {
+      summaryList[0].value = repairRes.data.length
+    }
+    
+    // 投诉总数
+    if (Array.isArray(complaintRes)) {
+      summaryList[1].value = complaintRes.length
+    } else if (complaintRes && complaintRes.data && Array.isArray(complaintRes.data)) {
+      summaryList[1].value = complaintRes.data.length
+    }
+    
+    // 业主总数
+    if (Array.isArray(ownerRes)) {
+      summaryList[2].value = ownerRes.length
+    } else if (ownerRes && ownerRes.data && Array.isArray(ownerRes.data)) {
+      summaryList[2].value = ownerRes.data.length
+    }
+    
+    // 缴费金额
+    let totalAmount = 0
+    if (Array.isArray(paymentRes)) {
+      totalAmount = paymentRes.reduce((sum, item) => sum + (item.paymentAmount || 0), 0)
+    } else if (paymentRes && paymentRes.data && Array.isArray(paymentRes.data)) {
+      totalAmount = paymentRes.data.reduce((sum, item) => sum + (item.paymentAmount || 0), 0)
+    }
+    summaryList[3].value = totalAmount > 0 ? `¥${totalAmount.toLocaleString()}` : '--'
+    
+  } catch (error) {
+    console.error('加载统计数据失败:', error)
+    // 使用模拟数据
+    summaryList[0].value = 156
+    summaryList[1].value = 89
+    summaryList[2].value = 1258
+    summaryList[3].value = '¥128,650'
+  }
+}
+
+// 加载报修趋势图表
 const loadRepairChart = () => {
   repairChart = echarts.init(repairChartRef.value)
   
@@ -73,7 +130,7 @@ const loadRepairChart = () => {
   repairChart.setOption(option)
 }
 
-// 加载投诉趋势图表（使用模拟数据）
+// 加载投诉趋势图表
 const loadComplaintChart = () => {
   complaintChart = echarts.init(complaintChartRef.value)
   
@@ -96,7 +153,7 @@ const loadComplaintChart = () => {
   complaintChart.setOption(option)
 }
 
-// 加载缴费分布图表（使用模拟数据）
+// 加载缴费分布图表
 const loadPaymentChart = () => {
   paymentChart = echarts.init(paymentChartRef.value)
   
@@ -138,7 +195,8 @@ const handleResize = () => {
 }
 
 // 初始化
-onMounted(() => {
+onMounted(async () => {
+  await loadStats()
   loadRepairChart()
   loadComplaintChart()
   loadPaymentChart()

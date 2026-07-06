@@ -27,17 +27,17 @@
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="handleSearch">
-            <el-icon><Search /></el-icon>
+           
             搜索
           </el-button>
           <el-button @click="handleReset">
-            <el-icon><RefreshLeft /></el-icon>
+           
             重置
           </el-button>
         </el-form-item>
       </el-form>
       <el-button type="primary" @click="openDialog('add')" class="add-btn">
-        <el-icon><Plus /></el-icon>
+       
         新增房屋
       </el-button>
     </el-card>
@@ -85,7 +85,7 @@
               size="small" 
               @click="openDialog('edit', scope.row)"
             >
-              <el-icon><Edit /></el-icon>
+              
               编辑
             </el-button>
             <el-button 
@@ -93,7 +93,6 @@
               type="danger"
               @click="handleDelete(scope.row.id)"
             >
-              <el-icon><Delete /></el-icon>
               删除
             </el-button>
           </template>

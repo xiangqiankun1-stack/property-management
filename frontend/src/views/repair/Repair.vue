@@ -23,16 +23,16 @@
             <el-option label="其他" value="其他" />
           </el-select>
         </el-form-item>
-        <el-form-item label="业主ID">
+        <!-- <el-form-item label="业主ID">
           <el-input v-model.number="searchForm.ownerId" type="number" placeholder="请输入业主ID" clearable />
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item>
           <el-button type="primary" @click="handleSearch">
-            <el-icon><Search /></el-icon>
+            
             搜索
           </el-button>
           <el-button @click="handleReset">
-            <el-icon><RefreshLeft /></el-icon>
+           
             重置
           </el-button>
         </el-form-item>
@@ -373,8 +373,19 @@ onMounted(() => loadData())
 
 <style scoped>
 .repair-container { padding: 20px; }
-.search-card { margin-bottom: 20px; }
-.add-btn { float: right; }
+.search-card { 
+  margin-bottom: 20px; 
+  position: relative;
+}
+
+.add-btn {
+  position: absolute;
+  right: 20px;
+  top: 15px;
+  padding: 8px 16px;
+  font-size: 14px;
+}
+
 .table-card { min-height: 400px; }
 .table-header { margin-bottom: 15px; padding: 10px 15px; background: #fafafa; border-radius: 4px; }
 .summary-info { font-size: 14px; color: #666; }

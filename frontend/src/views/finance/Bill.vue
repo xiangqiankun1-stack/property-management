@@ -6,23 +6,34 @@
           <el-input v-model="searchForm.billNo" placeholder="请输入账单编号" clearable />
         </el-form-item> -->
         <el-form-item label="费用类型">
-          <el-select v-model="searchForm.feeItemId" placeholder="请选择费用类型" clearable>
-            <el-option label="全部" value="" />
-            <el-option label="物业费" :value="1" />
-            <el-option label="水费" :value="2" />
-            <el-option label="电费" :value="3" />
-            <el-option label="燃气费" :value="4" />
-            <el-option label="停车费" :value="5" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="状态">
-          <el-select v-model="searchForm.status" placeholder="请选择状态" clearable>
-            <el-option label="全部" value="" />
-            <el-option label="待支付" :value="0" />
-            <el-option label="部分支付" :value="1" />
-            <el-option label="已支付" :value="2" />
-          </el-select>
-        </el-form-item>
+        <el-select 
+          v-model="searchForm.feeItemId" 
+          placeholder="请选择费用类型" 
+          clearable
+          style="width: 150px"
+        >
+          <el-option label="全部" value="" />
+          <el-option label="物业费" :value="1" />
+          <el-option label="水费" :value="2" />
+          <el-option label="电费" :value="3" />
+          <el-option label="燃气费" :value="4" />
+          <el-option label="停车费" :value="5" />
+        </el-select>
+      </el-form-item>
+
+      <el-form-item label="状态">
+        <el-select 
+          v-model="searchForm.status" 
+          placeholder="请选择状态" 
+          clearable
+          style="width: 140px"
+        >
+          <el-option label="全部" value="" />
+          <el-option label="待支付" :value="0" />
+          <el-option label="部分支付" :value="1" />
+          <el-option label="已支付" :value="2" />
+        </el-select>
+      </el-form-item>
         <el-form-item label="业主ID">
           <el-input v-model.number="searchForm.ownerId" type="number" placeholder="请输入业主ID" clearable />
         </el-form-item>

@@ -7,7 +7,12 @@
           <el-input v-model="searchForm.houseNumber" placeholder="请输入房号" clearable />
         </el-form-item>
         <el-form-item label="所属楼栋">
-          <el-select v-model="searchForm.buildingId" placeholder="请选择楼栋" clearable>
+          <el-select 
+            v-model="searchForm.buildingId" 
+            placeholder="请选择楼栋" 
+            clearable
+            style="width: 120px"
+          >
             <el-option label="全部" value="" />
             <el-option 
               v-for="item in buildingList" 
@@ -17,8 +22,14 @@
             />
           </el-select>
         </el-form-item>
+
         <el-form-item label="状态">
-          <el-select v-model="searchForm.status" placeholder="请选择状态" clearable>
+          <el-select 
+            v-model="searchForm.status" 
+            placeholder="请选择状态" 
+            clearable
+            style="width: 120px"
+          >
             <el-option label="全部" value="" />
             <el-option label="空置" :value="0" />
             <el-option label="已入住" :value="1" />

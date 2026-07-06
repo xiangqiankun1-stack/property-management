@@ -10,7 +10,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Random;
 
 @Service
 public class BillServiceImpl implements BillService {
@@ -33,6 +36,10 @@ public class BillServiceImpl implements BillService {
 
     @Override
     public boolean add(Bill bill) {
+        // 自动生成账单编号：BL + yyyyMMddHHmmss + 4位随机数
+        String billNo = "BL" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
+                + String.format("%04d", new Random().nextInt(10000));
+        bill.setBillNo(billNo);
         return billMapper.insert(bill) > 0;
     }
 

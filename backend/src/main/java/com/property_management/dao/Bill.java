@@ -16,9 +16,8 @@ import java.time.LocalDateTime;
 public class Bill extends BaseEntity {
 
     /**
-     * 账单编号
+     * 账单编号(后端自动生成)
      */
-    @NotBlank(message = "账单编号不能为空")
     private String billNo;
 
     /**

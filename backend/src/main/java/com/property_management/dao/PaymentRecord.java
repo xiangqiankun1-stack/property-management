@@ -15,9 +15,8 @@ import java.time.LocalDateTime;
 public class PaymentRecord extends BaseEntity {
 
     /**
-     * 缴费流水号
+     * 缴费流水号(后端自动生成)
      */
-    @NotBlank(message = "缴费流水号不能为空")
     private String paymentNo;
 
     /**

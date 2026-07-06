@@ -104,9 +104,16 @@
         <!-- <el-form-item label="报修编号" prop="repairNo">
           <el-input v-model="form.repairNo" placeholder="请输入报修编号" />
         </el-form-item> -->
-        <!-- <el-form-item label="业主ID" prop="ownerId">
-          <el-input v-model.number="form.ownerId" type="number" placeholder="请输入业主ID" />
-        </el-form-item> -->
+        <el-form-item label="业主" prop="ownerId">
+          <el-select v-model.number="form.ownerId" placeholder="请选择业主" filterable>
+            <el-option 
+              v-for="owner in ownerOptions" 
+              :key="owner.id" 
+              :label="`${owner.id} - ${owner.name || owner.phone || owner.phoneNumber}`" 
+              :value="owner.id" 
+            />
+          </el-select>
+        </el-form-item>
         <el-form-item label="房屋ID" prop="houseId">
           <el-input v-model.number="form.houseId" type="number" placeholder="请输入房屋ID" />
         </el-form-item>
@@ -119,7 +126,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="报修内容" prop="repairContent">
-          <el-textarea v-model="form.repairContent" placeholder="请输入报修内容" :rows="3" />
+          <el-input v-model="form.repairContent" type="textarea" placeholder="请输入报修内容" :rows="4" />
         </el-form-item>
         <el-form-item label="联系电话" prop="contactPhone">
           <el-input v-model="form.contactPhone" placeholder="请输入联系电话" />
@@ -149,6 +156,7 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Search, RefreshLeft, Plus, Edit, Delete } from '@element-plus/icons-vue'
 import { getRepairList, createRepair, updateRepair, deleteRepair } from '@/api/repair'
+import { getOwnerList } from '@/api/owner'
 
 const searchForm = reactive({ 
   repairNo: '', 
@@ -161,14 +169,17 @@ const tableData = ref([])
 const loading = ref(false)
 const pagination = reactive({ currentPage: 1, pageSize: 10, total: 0 })
 
+// 业主列表（用于下拉选择）
+const ownerOptions = ref([])
+
 const dialogVisible = ref(false)
 const dialogType = ref('add')
 const formRef = ref(null)
 const form = reactive({ 
-  id: '', 
+  id: null, 
   repairNo: '', 
-  ownerId: '', 
-  houseId: '', 
+  ownerId: null, 
+  houseId: null, 
   repairType: '水电', 
   repairContent: '', 
   contactPhone: '', 
@@ -177,13 +188,10 @@ const form = reactive({
 })
 
 const rules = {
-  repairNo: [{ required: true, message: '请输入报修编号', trigger: 'blur' }],
   ownerId: [{ required: true, message: '请输入业主ID', trigger: 'blur' }, { type: 'number', message: '必须是数字', trigger: 'blur' }],
   houseId: [{ required: true, message: '请输入房屋ID', trigger: 'blur' }, { type: 'number', message: '必须是数字', trigger: 'blur' }],
   repairType: [{ required: true, message: '请选择报修类型', trigger: 'blur' }],
-  repairContent: [{ required: true, message: '请输入报修内容', trigger: 'blur' }],
-  contactPhone: [{ required: true, message: '请输入联系电话', trigger: 'blur' }],
-  expectedTime: [{ required: true, message: '请选择期望时间', trigger: 'blur' }]
+  repairContent: [{ required: true, message: '请输入报修内容', trigger: 'blur' }]
 }
 
 // 状态映射
@@ -317,12 +325,23 @@ const handleReset = () => {
 const openDialog = (type, row = null) => {
   dialogType.value = type
   dialogVisible.value = true
-  if (formRef.value) formRef.value.resetFields()
+  const userStore = useUserStore()
   if (type === 'add') {
-    Object.assign(form, { id: '', repairNo: '', ownerId: '', houseId: '', repairType: '水电', repairContent: '', contactPhone: '', expectedTime: '', status: 0 })
+    // 自动获取当前用户ID作为业主ID
+    const defaultOwnerId = userStore.userInfo.id || userStore.userInfo.userId || null
+    Object.assign(form, { id: null, repairNo: '', ownerId: defaultOwnerId, houseId: null, repairType: '水电', repairContent: '', contactPhone: '', expectedTime: '', status: 0 })
   } else if (type === 'edit' && row) {
     Object.assign(form, row)
   }
+  // 在设置数据后调用resetFields，避免覆盖自动填充的业主ID
+  setTimeout(() => {
+    if (formRef.value) formRef.value.resetFields()
+    // 重置后重新设置业主ID
+    if (type === 'add') {
+      const defaultOwnerId = userStore.userInfo.id || userStore.userInfo.userId || null
+      form.ownerId = defaultOwnerId
+    }
+  }, 0)
 }
 
 const handleDialogClose = () => { if (formRef.value) formRef.value.resetFields() }
@@ -368,7 +387,30 @@ const handleCurrentChange = (page) => {
   pagination.currentPage = page 
 }
 
-onMounted(() => loadData())
+// 加载业主列表
+const loadOwnerOptions = async () => {
+  try {
+    const res = await getOwnerList()
+    if (Array.isArray(res) && res.length > 0) {
+      ownerOptions.value = res
+    } else if (res && res.data && Array.isArray(res.data)) {
+      ownerOptions.value = res.data
+    }
+  } catch (error) {
+    console.error('加载业主列表失败:', error)
+    // 使用模拟数据
+    ownerOptions.value = [
+      { id: 1, name: '张三', phone: '13800138001' },
+      { id: 2, name: '李四', phone: '13800138002' },
+      { id: 3, name: '王五', phone: '13800138003' }
+    ]
+  }
+}
+
+onMounted(async () => {
+  await loadData()
+  await loadOwnerOptions()
+})
 </script>
 
 <style scoped>

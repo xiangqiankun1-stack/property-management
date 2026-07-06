@@ -2,9 +2,9 @@
   <div class="bill-container">
     <el-card class="search-card">
       <el-form :model="searchForm" inline>
-        <el-form-item label="账单编号">
+        <!-- <el-form-item label="账单编号">
           <el-input v-model="searchForm.billNo" placeholder="请输入账单编号" clearable />
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="费用类型">
           <el-select v-model="searchForm.feeItemId" placeholder="请选择费用类型" clearable>
             <el-option label="全部" value="" />
@@ -163,28 +163,27 @@ const dialogVisible = ref(false)
 const dialogType = ref('add')
 const formRef = ref(null)
 const form = reactive({ 
-  id: '', 
+  id: null, 
   billNo: '', 
-  houseId: '', 
-  ownerId: '', 
-  feeItemId: 1, 
+  houseId: null, 
+  ownerId: null, 
+  feeItemId: null, 
   periodStart: '', 
   periodEnd: '', 
-  amount: '', 
+  amount: null, 
   dueDate: '',
-  paidAmount: 0,
+  paidAmount: null,
+  generateTime: '',
   status: 0 
 })
 
 const rules = {
-  billNo: [{ required: true, message: '请输入账单编号', trigger: 'blur' }],
   houseId: [{ required: true, message: '请输入房屋ID', trigger: 'blur' }, { type: 'number', message: '必须是数字', trigger: 'blur' }],
   ownerId: [{ required: true, message: '请输入业主ID', trigger: 'blur' }, { type: 'number', message: '必须是数字', trigger: 'blur' }],
   feeItemId: [{ required: true, message: '请选择费用类型', trigger: 'blur' }],
   periodStart: [{ required: true, message: '请选择计费周期开始', trigger: 'blur' }],
   periodEnd: [{ required: true, message: '请选择计费周期结束', trigger: 'blur' }],
-  amount: [{ required: true, message: '请输入金额', trigger: 'blur' }, { type: 'number', min: 0.01, message: '金额必须大于0', trigger: 'blur' }],
-  dueDate: [{ required: true, message: '请选择到期日期', trigger: 'blur' }]
+  amount: [{ required: true, message: '请输入金额', trigger: 'blur' }, { type: 'number', min: 0.01, message: '金额必须大于0', trigger: 'blur' }]
 }
 
 // 费用类型映射
@@ -339,7 +338,7 @@ const openDialog = (type, row = null) => {
   dialogVisible.value = true
   if (formRef.value) formRef.value.resetFields()
   if (type === 'add') {
-    Object.assign(form, { id: '', billNo: '', houseId: '', ownerId: '', feeItemId: 1, periodStart: '', periodEnd: '', amount: '', dueDate: '', paidAmount: 0, status: 0 })
+    Object.assign(form, { id: null, billNo: '', houseId: null, ownerId: null, feeItemId: null, periodStart: '', periodEnd: '', amount: null, dueDate: '', paidAmount: null, generateTime: '', status: 0 })
   } else if (type === 'edit' && row) {
     Object.assign(form, row)
   }
@@ -352,11 +351,19 @@ const handleSubmit = async () => {
   const valid = await formRef.value.validate()
   if (!valid) return
   try {
+    // 准备提交数据
+    const submitData = {
+      ...form,
+      feeItemId: Number(form.feeItemId),
+      paidAmount: form.paidAmount || 0,
+      generateTime: new Date().toISOString()
+    }
+    
     if (dialogType.value === 'add') {
-      await createBill(form)
+      await createBill(submitData)
       ElMessage.success('新增成功')
     } else {
-      await updateBill(form.id, form)
+      await updateBill(form.id, submitData)
       ElMessage.success('修改成功')
     }
     dialogVisible.value = false

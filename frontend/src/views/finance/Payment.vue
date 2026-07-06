@@ -129,9 +129,9 @@
         <el-form-item label="操作员ID" prop="operatorId">
           <el-input v-model.number="form.operatorId" type="number" placeholder="请输入操作员ID" />
         </el-form-item>
-        <el-form-item label="凭证号" prop="voucherNo">
+       <!--  <el-form-item label="凭证号" prop="voucherNo">
           <el-input v-model="form.voucherNo" placeholder="请输入第三方支付流水号" />
-        </el-form-item>
+        </el-form-item> -->
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>

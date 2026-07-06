@@ -9,7 +9,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Random;
 
 @Service
 public class ComplaintServiceImpl implements ComplaintService {
@@ -29,6 +31,11 @@ public class ComplaintServiceImpl implements ComplaintService {
 
     @Override
     public boolean add(Complaint complaint) {
+        // 自动生成投诉编号：TS + yyyyMMddHHmmss + 4位随机数
+        String complaintNo = "TS" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
+                + String.format("%04d", new Random().nextInt(10000));
+        complaint.setComplaintNo(complaintNo);
+
         Long currentUserId = ThreadLocalUtil.getCurrentUserId();
         if (currentUserId == null) {
             currentUserId = 0L;

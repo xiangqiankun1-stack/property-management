@@ -14,9 +14,8 @@ import java.time.LocalDateTime;
 public class Complaint extends BaseEntity {
 
     /**
-     * 投诉编号
+     * 投诉编号(后端自动生成)
      */
-    @NotBlank(message = "投诉编号不能为空")
     private String complaintNo;
 
     /**

@@ -12,7 +12,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Random;
 
 @Service
 public class RepairServiceImpl implements RepairService {
@@ -38,6 +41,10 @@ public class RepairServiceImpl implements RepairService {
 
     @Override
     public boolean add(Repair repair) {
+        // 自动生成报修单号：BX + yyyyMMddHHmmss + 4位随机数
+        String repairNo = "BX" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
+                + String.format("%04d", new Random().nextInt(10000));
+        repair.setRepairNo(repairNo);
         return repairMapper.insert(repair) > 0;
     }
 

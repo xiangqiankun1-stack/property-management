@@ -7,7 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Random;
 
 @Service
 public class PaymentRecordServiceImpl implements PaymentRecordService {
@@ -27,6 +30,10 @@ public class PaymentRecordServiceImpl implements PaymentRecordService {
 
     @Override
     public boolean add(PaymentRecord paymentRecord) {
+        // 自动生成第三方支付流水号/凭证号：V + yyyyMMddHHmmss + 4位随机数
+        String voucherNo = "V" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
+                + String.format("%04d", new Random().nextInt(10000));
+        paymentRecord.setVoucherNo(voucherNo);
         return paymentRecordMapper.insert(paymentRecord) > 0;
     }
 

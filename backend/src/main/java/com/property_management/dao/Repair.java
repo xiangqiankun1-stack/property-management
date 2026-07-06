@@ -14,9 +14,8 @@ import java.time.LocalDateTime;
 public class Repair extends BaseEntity {
 
     /**
-     * 报修单号
+     * 报修单号(后端自动生成)
      */
-    @NotBlank(message = "报修单号不能为空")
     private String repairNo;
 
     /**

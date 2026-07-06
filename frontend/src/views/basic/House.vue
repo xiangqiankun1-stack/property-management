@@ -422,16 +422,20 @@ const loadData = async () => {
 }
 
 // 搜索
-const handleSearch = () => {
-  updateTableData()
+const handleSearch = async () => {
+  await loadCommunityList()
+  await loadBuildingList()
+  await loadData()
 }
 
 // 重置
-const handleReset = () => {
+const handleReset = async () => {
   searchForm.houseNumber = ''
   searchForm.buildingId = ''
   searchForm.status = ''
-  updateTableData()
+  await loadCommunityList()
+  await loadBuildingList()
+  await loadData()
 }
 
 // 打开弹窗
@@ -515,10 +519,10 @@ const handleCurrentChange = (page) => {
 }
 
 // 初始化
-onMounted(() => {
-  loadCommunityList()
-  loadBuildingList()
-  loadData()
+onMounted(async () => {
+  await loadCommunityList()
+  await loadBuildingList()
+  await loadData()
 })
 </script>
 

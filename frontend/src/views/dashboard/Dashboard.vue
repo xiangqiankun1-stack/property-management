@@ -89,11 +89,16 @@ const loadStats = async () => {
     
     // 缴费金额
     let totalAmount = 0
+    let paymentData = []
     if (Array.isArray(paymentRes)) {
-      totalAmount = paymentRes.reduce((sum, item) => sum + (item.paymentAmount || 0), 0)
+      paymentData = paymentRes
     } else if (paymentRes && paymentRes.data && Array.isArray(paymentRes.data)) {
-      totalAmount = paymentRes.data.reduce((sum, item) => sum + (item.paymentAmount || 0), 0)
+      paymentData = paymentRes.data
     }
+    totalAmount = paymentData.reduce((sum, item) => {
+      const amount = item.payAmount || item.paymentAmount || 0
+      return sum + (typeof amount === 'string' ? parseFloat(amount) : amount)
+    }, 0)
     summaryList[3].value = totalAmount > 0 ? `¥${totalAmount.toLocaleString()}` : '--'
     
   } catch (error) {

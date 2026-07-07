@@ -1,0 +1,27 @@
+# Java
+target/
+*.class
+*.log
+
+# Maven
+.mvn/
+!.mvn/wrapper/maven-wrapper.jar
+
+# IDEA
+.idea/
+*.iml
+
+# VSCode
+.vscode/
+
+# Node
+node_modules/
+dist/
+npm-debug.log*
+yarn-debug.log*
+pnpm-lock.yaml
+
+# OS
+.DS_Store
+Thumbs.db
+backend/src/main/resources/application.yaml

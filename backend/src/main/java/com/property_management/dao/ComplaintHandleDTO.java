@@ -29,7 +29,7 @@ public class ComplaintHandleDTO {
     /**
      * 状态：0.待处理 1.处理中 2.已处理 3.已关闭
      */
-    @NotNull(message = "状态不能为空")
+
     private Integer status;
 
     /**

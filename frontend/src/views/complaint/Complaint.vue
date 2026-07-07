@@ -88,17 +88,17 @@
         <el-table-column prop="handleUserName" label="处理人" width="100"/>
         <el-table-column prop="handleTime" label="处理时间" width="180"/>
         <el-table-column prop="handleResult" label="处理结果" min-width="200"/>
-        <el-table-column prop="satisfaction" label="满意度" width="100" align="center">
+       <!--  <el-table-column prop="satisfaction" label="满意度" width="100" align="center">
           <template #default="scope">
             <div class="satisfaction-stars">
               <span v-for="i in 5" :key="i" class="star" :class="{ active: i <= scope.row.satisfaction }">★</span>
             </div>
           </template>
-        </el-table-column>
+        </el-table-column> -->
         <el-table-column prop="createTime" label="投诉时间" width="180"/>
         <el-table-column label="操作" width="165" align="center">
           <template #default="scope">
-            <el-button size="small" @click="openDialog('edit', scope.row)">
+            <el-button size="small" @click="openHandleDialog(scope.row)">
               
               处理
             </el-button>
@@ -111,8 +111,8 @@
       </el-table>
 
       <el-pagination
-        v-model:current-page="pagination.currentPage"
-        v-model:page-size="pagination.pageSize"
+        :current-page="pagination.currentPage"
+        :page-size="pagination.pageSize"
         :total="pagination.total"
         :page-sizes="[10, 20, 50, 100]"
         layout="total, sizes, prev, pager, next, jumper"
@@ -151,36 +151,29 @@
         <el-form-item label="联系电话" prop="contactPhone">
           <el-input v-model="form.contactPhone" placeholder="请输入联系电话" />
         </el-form-item>
-        <el-form-item label="处理人ID" prop="handleUserId">
-          <el-input v-model.number="form.handleUserId" type="number" placeholder="请输入处理人ID" />
-        </el-form-item>
-        <el-form-item label="处理时间">
-          <el-date-picker v-model="form.handleTime" type="datetime" placeholder="请选择处理时间" />
-        </el-form-item>
-        <el-form-item label="处理结果">
-          <el-textarea v-model="form.handleResult" placeholder="请输入处理结果" :rows="3" />
-        </el-form-item>
-        <el-form-item label="满意度">
-          <el-select v-model="form.satisfaction">
-            <el-option label="1星" :value="1" />
-            <el-option label="2星" :value="2" />
-            <el-option label="3星" :value="3" />
-            <el-option label="4星" :value="4" />
-            <el-option label="5星" :value="5" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="状态">
-          <el-select v-model="form.status">
-            <el-option label="待处理" :value="0" />
-            <el-option label="处理中" :value="1" />
-            <el-option label="已处理" :value="2" />
-            <el-option label="已撤销" :value="3" />
-          </el-select>
-        </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
         <el-button type="primary" @click="handleSubmit">确定</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 处理投诉弹窗 -->
+    <el-dialog v-model="handleDialogVisible" title="处理投诉" width="500px" @close="handleDialogClose">
+      <el-form :model="handleForm" ref="handleFormRef" :rules="handleRules" label-width="100px">
+        <el-form-item label="投诉标题" disabled>
+          <el-input :value="handleForm.complaintTitle" disabled />
+        </el-form-item>
+        <el-form-item label="投诉内容" disabled>
+          <el-input :value="handleForm.complaintContent" type="textarea" disabled :rows="3" />
+        </el-form-item>
+        <el-form-item label="处理结果" prop="handleResult">
+          <el-input v-model="handleForm.handleResult" type="textarea" placeholder="请输入处理结果" :rows="3" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="handleDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleComplaint">确定处理</el-button>
       </template>
     </el-dialog>
   </div>
@@ -208,28 +201,36 @@ const dialogType = ref('add')
 const formRef = ref(null)
 const form = reactive({ 
   id: null, 
-  complaintNo: '', 
   ownerId: null, 
   complaintType: 1, 
   complaintCategory: '', 
   complaintTitle: '', 
   complaintContent: '', 
-  contactPhone: '', 
-  handleUserId: null, 
-  handleTime: '', 
-  handleResult: '',
-  satisfaction: 0,
-  status: 0 
+  contactPhone: ''
+})
+
+// 处理投诉相关
+const handleDialogVisible = ref(false)
+const handleFormRef = ref(null)
+const handleForm = reactive({
+  id: null,
+  complaintTitle: '',
+  complaintContent: '',
+  handleResult: ''
 })
 
 const rules = {
-  complaintNo: [{ required: true, message: '请输入投诉编号', trigger: 'blur' }],
   ownerId: [{ required: true, message: '请输入业主ID', trigger: 'blur' }, { type: 'number', message: '必须是数字', trigger: 'blur' }],
   complaintType: [{ required: true, message: '请选择投诉类型', trigger: 'blur' }],
   complaintCategory: [{ required: true, message: '请输入投诉分类', trigger: 'blur' }],
   complaintTitle: [{ required: true, message: '请输入投诉标题', trigger: 'blur' }],
   complaintContent: [{ required: true, message: '请输入投诉内容', trigger: 'blur' }],
   contactPhone: [{ required: true, message: '请输入联系电话', trigger: 'blur' }]
+}
+
+// 处理投诉表单规则
+const handleRules = {
+  handleResult: [{ required: true, message: '请输入处理结果', trigger: 'blur' }]
 }
 
 // 投诉类型映射
@@ -376,30 +377,52 @@ const openDialog = (type, row = null) => {
   dialogVisible.value = true
   if (formRef.value) formRef.value.resetFields()
   if (type === 'add') {
-    Object.assign(form, { id: '', complaintNo: '', ownerId: '', complaintType: 1, complaintCategory: '', complaintTitle: '', complaintContent: '', contactPhone: '', handleUserId: '', handleTime: '', handleResult: '', satisfaction: 0, status: 0 })
-  } else if (type === 'edit' && row) {
-    Object.assign(form, row)
+    Object.assign(form, { id: '', ownerId: '', complaintType: 1, complaintCategory: '', complaintTitle: '', complaintContent: '', contactPhone: '' })
   }
 }
 
 const handleDialogClose = () => { if (formRef.value) formRef.value.resetFields() }
+
+// 打开处理投诉弹窗
+const openHandleDialog = (row) => {
+  handleDialogVisible.value = true
+  if (handleFormRef.value) handleFormRef.value.resetFields()
+  Object.assign(handleForm, {
+    id: row.id,
+    complaintTitle: row.complaintTitle,
+    complaintContent: row.complaintContent,
+    handleResult: ''
+  })
+}
+
+const handleDialogClose2 = () => { if (handleFormRef.value) handleFormRef.value.resetFields() }
 
 const handleSubmit = async () => {
   if (!formRef.value) return
   const valid = await formRef.value.validate()
   if (!valid) return
   try {
-    if (dialogType.value === 'add') {
-      await createComplaint(form)
-      ElMessage.success('新增成功')
-    } else {
-      await updateComplaint(form.id, form)
-      ElMessage.success('修改成功')
-    }
+    await createComplaint(form)
+    ElMessage.success('新增成功')
     dialogVisible.value = false
     loadData()
   } catch (error) {
-    ElMessage.error(dialogType.value === 'add' ? '新增失败' : '修改失败')
+    ElMessage.error('新增失败')
+  }
+}
+
+// 处理投诉
+const handleComplaint = async () => {
+  if (!handleFormRef.value) return
+  const valid = await handleFormRef.value.validate()
+  if (!valid) return
+  try {
+    await handleComplaintApi(handleForm.id, { handleResult: handleForm.handleResult })
+    ElMessage.success('处理成功')
+    handleDialogVisible.value = false
+    loadData()
+  } catch (error) {
+    ElMessage.error('处理失败')
   }
 }
 

@@ -64,13 +64,13 @@
       
       <el-table :data="displayData" border stripe :loading="loading" style="width: 100%">
         <el-table-column prop="id" label="ID" width="80" align="center"/>
-        <el-table-column prop="paymentNo" label="缴费流水号" min-width="150"/>
-        <el-table-column prop="billName" label="账单名称"/>
-        <el-table-column prop="payer" label="缴费人"/>
-        <el-table-column prop="amount" label="金额(元)" width="120" align="right"/>
-        <el-table-column prop="method" label="支付方式" width="120"/>
-        <el-table-column prop="payTime" label="支付时间" width="180"/>
-        <el-table-column prop="transactionId" label="交易单号"/>
+        <el-table-column prop="paymentNo" label="缴费流水号" min-width="150" align="center"/>
+        <el-table-column prop="billName" label="账单名称" width="100" align="center"/>
+        <el-table-column prop="payer" label="缴费人" width="80" align="center"/>
+        <el-table-column prop="amount" label="金额(元)" width="80" align="center"/>
+        <el-table-column prop="method" label="支付方式" width="100" align="center"/>
+        <el-table-column prop="payTime" label="支付时间" width="180" align="center"/>
+        <el-table-column prop="transactionId" label="交易单号" align="center"/>
         <el-table-column prop="status" label="状态" width="100" align="center">
           <template #default="scope">
             <el-tag :type="scope.row.status === 1 ? 'success' : 'warning'">

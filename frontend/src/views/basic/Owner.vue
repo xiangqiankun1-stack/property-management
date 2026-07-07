@@ -73,17 +73,17 @@
         :loading="loading"
         style="width: 100%"
       >
-        <el-table-column prop="id" label="ID" width="80" align="center"/>
+        <el-table-column prop="id" label="ID" width="70" align="center"/>
         <el-table-column prop="ownerName" label="业主姓名"/>
-        <el-table-column prop="gender" label="性别" width="80" align="center">
+        <el-table-column prop="gender" label="性别" width="60" align="center">
           <template #default="scope">
             {{ scope.row.gender === 1 ? '男' : '女' }}
           </template>
         </el-table-column>
-        <el-table-column prop="phoneNumber" label="联系电话"/>
-        <el-table-column prop="idCard" label="身份证号"/>
-        <el-table-column prop="houseNumber" label="房号"/>
-        <el-table-column prop="relationship" label="与房屋关系" width="120"/>
+        <el-table-column prop="phoneNumber" label="联系电话" width="120" align="center"/>
+        <el-table-column prop="idCard" label="身份证号" width="120" align="center"/>
+        <el-table-column prop="houseNumber" label="房号" width="80" align="center"/>
+        <el-table-column prop="relationship" label="与房屋关系" width="100" align="center"/>
         <el-table-column prop="status" label="状态" width="100" align="center">
           <template #default="scope">
             <el-tag :type="scope.row.status === 1 ? 'success' : 'danger'">

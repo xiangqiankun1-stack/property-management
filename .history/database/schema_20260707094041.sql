@@ -5,8 +5,6 @@
 -- 一、系统权限
 -- =============================================
 
-CREATE DATABASE IF NOT EXISTS property_management DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-
 DROP TABLE IF EXISTS sys_permission_info;
 CREATE TABLE sys_permission_info(
                                     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键' ,

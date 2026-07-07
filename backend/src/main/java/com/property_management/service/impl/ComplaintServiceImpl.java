@@ -1,6 +1,7 @@
 package com.property_management.service.impl;
 
 import com.property_management.dao.Complaint;
+import com.property_management.dao.ComplaintHandleDTO;
 import com.property_management.mapper.ComplaintMapper;
 import com.property_management.service.ComplaintService;
 import com.property_management.utils.ThreadLocalUtil;
@@ -36,9 +37,6 @@ public class ComplaintServiceImpl implements ComplaintService {
                 + String.format("%04d", new Random().nextInt(10000));
         complaint.setComplaintNo(complaintNo);
 
-        // 设置默认状态为待处理
-        complaint.setStatus(0);
-
         Long currentUserId = ThreadLocalUtil.getCurrentUserId();
         if (currentUserId == null) {
             currentUserId = 0L;
@@ -60,15 +58,20 @@ public class ComplaintServiceImpl implements ComplaintService {
     }
 
     @Override
-    public boolean handle(Complaint complaint) {
+    public boolean handle(Long id, ComplaintHandleDTO dto) {
+        Complaint complaint = complaintMapper.selectById(id);
+        if (complaint == null) {
+            return false;
+        }
         complaint.setHandleTime(LocalDateTime.now());
         Long currentUserId = ThreadLocalUtil.getCurrentUserId();
         if (currentUserId == null) {
             currentUserId = 0L;
         }
         complaint.setHandleUserId(currentUserId);
-        // 处理完成后自动将状态改为已处理
-        complaint.setStatus(2);
+        complaint.setHandleResult(dto.getHandleResult());
+        complaint.setStatus(dto.getStatus());
+        complaint.setSatisfaction(dto.getSatisfaction());
         return complaintMapper.updateById(complaint) > 0;
     }
 }

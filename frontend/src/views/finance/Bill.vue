@@ -69,14 +69,14 @@
       
       <el-table :data="displayData" border stripe :loading="loading" style="width: 100%">
         <el-table-column prop="id" label="ID" width="80" align="center"/>
-        <el-table-column prop="billNo" label="账单编号" min-width="150"/>
-        <el-table-column prop="houseNumber" label="房号" width="100"/>
-        <el-table-column prop="ownerName" label="业主" width="100"/>
-        <el-table-column prop="feeItemName" label="费用类型" width="120"/>
-        <el-table-column prop="period" label="计费周期" width="180"/>
-        <el-table-column prop="amount" label="金额(元)" width="100" align="right"/>
-        <el-table-column prop="paidAmount" label="已付(元)" width="100" align="right"/>
-        <el-table-column prop="unpaidAmount" label="未付(元)" width="100" align="right"/>
+        <el-table-column prop="billNo" label="账单编号" min-width="150" align="center"/>
+        <el-table-column prop="houseNumber" label="房号" width="80" align="center"/>
+        <el-table-column prop="ownerName" label="业主" width="100" align="center"/>
+        <el-table-column prop="feeItemName" label="费用类型" width="100" align="center"/>
+        <el-table-column prop="period" label="计费周期" width="150" align="center"/>
+        <el-table-column prop="amount" label="金额(元)" width="80" align="center"/>
+        <el-table-column prop="paidAmount" label="已付(元)" width="80" align="center"/>
+        <el-table-column prop="unpaidAmount" label="未付(元)" width="80" align="center"/>
         <el-table-column prop="status" label="状态" width="100" align="center">
           <template #default="scope">
             <el-tag :type="getStatusType(scope.row.status)">
@@ -85,7 +85,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="dueDate" label="到期日期" width="120"/>
-        <el-table-column prop="generateTime" label="生成时间" width="180"/>
+        <el-table-column prop="generateTime" label="生成时间" width="180" align="center"/>
         <el-table-column label="操作" width="165" align="center">
           <template #default="scope">
             <el-button size="small" @click="openDialog('edit', scope.row)">

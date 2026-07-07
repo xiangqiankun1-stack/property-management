@@ -89,8 +89,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>3.2.0</version>
                 <configuration>
-                    <mainClass>com.smart.reader.SmartReaderApplication</mainClass>
-                    <skip>true</skip>
+                    <mainClass>com.property_management.PropertyManagementApplication</mainClass>
                 </configuration>
                 <executions>
                     <execution>

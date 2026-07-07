@@ -56,22 +56,31 @@ public class ComplaintServiceImpl implements ComplaintService {
         // 投诉记录没有子表关联，直接删除（逻辑删除）
         return complaintMapper.deleteById(id) >= 0;
     }
-
     @Override
     public boolean handle(Long id, ComplaintHandleDTO dto) {
         Complaint complaint = complaintMapper.selectById(id);
         if (complaint == null) {
             return false;
         }
+
+        // 设置处理时间
         complaint.setHandleTime(LocalDateTime.now());
+
+        // 设置处理人ID（使用当前登录用户）
         Long currentUserId = ThreadLocalUtil.getCurrentUserId();
         if (currentUserId == null) {
             currentUserId = 0L;
         }
         complaint.setHandleUserId(currentUserId);
+
+        // 设置处理结果
         complaint.setHandleResult(dto.getHandleResult());
-        complaint.setStatus(dto.getStatus());
-        complaint.setSatisfaction(dto.getSatisfaction());
+
+        // 处理完成后自动设置状态为已处理（不再依赖前端传入）
+        complaint.setStatus(2);
+
+        // 满意度暂时不设置（如果需要，后续可以单独添加评价功能）
+
         return complaintMapper.updateById(complaint) > 0;
     }
 }

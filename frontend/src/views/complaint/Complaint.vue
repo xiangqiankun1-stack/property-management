@@ -74,7 +74,6 @@
         <el-table-column prop="complaintNo" label="投诉编号" min-width="150" align="center"/>
         <el-table-column prop="ownerName" label="投诉人" width="100" align="center"/>
         <el-table-column prop="complaintType" label="投诉类型" width="100" align="center"/>
-        <el-table-column prop="complaintCategory" label="投诉分类" width="120" align="center"/>
         <el-table-column prop="complaintTitle" label="投诉标题" min-width="180" align="center"/>
         <el-table-column prop="complaintContent" label="投诉内容" min-width="200" align="center"/>
         <el-table-column prop="contactPhone" label="联系电话" width="130" align="center"/>
@@ -138,9 +137,6 @@
             <el-option label="设施维护" :value="4" />
             <el-option label="其他" :value="5" />
           </el-select>
-        </el-form-item>
-        <el-form-item label="投诉分类" prop="complaintCategory">
-          <el-input v-model="form.complaintCategory" placeholder="请输入投诉分类" />
         </el-form-item>
         <el-form-item label="投诉标题" prop="complaintTitle">
           <el-input v-model="form.complaintTitle" placeholder="请输入投诉标题" />
@@ -210,8 +206,7 @@ const form = reactive({
   id: null, 
   complaintNo: '', 
   ownerId: null, 
-  complaintType: 1, 
-  complaintCategory: '', 
+  complaintType: 1,  
   complaintTitle: '', 
   complaintContent: '', 
   contactPhone: '', 
@@ -226,7 +221,6 @@ const rules = {
   complaintNo: [{ required: true, message: '请输入投诉编号', trigger: 'blur' }],
   ownerId: [{ required: true, message: '请输入业主ID', trigger: 'blur' }, { type: 'number', message: '必须是数字', trigger: 'blur' }],
   complaintType: [{ required: true, message: '请选择投诉类型', trigger: 'blur' }],
-  complaintCategory: [{ required: true, message: '请输入投诉分类', trigger: 'blur' }],
   complaintTitle: [{ required: true, message: '请输入投诉标题', trigger: 'blur' }],
   complaintContent: [{ required: true, message: '请输入投诉内容', trigger: 'blur' }],
   contactPhone: [{ required: true, message: '请输入联系电话', trigger: 'blur' }]
@@ -317,8 +311,7 @@ const updateTableData = () => {
     id: item.id,
     complaintNo: item.complaintNo,
     ownerName: `业主${item.ownerId}`,
-    complaintType: complaintTypeMap[item.complaintType] || '未知',  // 映射数字到中文
-    complaintCategory: item.complaintCategory || '-',              // 新增投诉分类
+    complaintType: complaintTypeMap[item.complaintType] || '未知',  // 映射数字到中文              
     complaintTitle: item.complaintTitle || '-',                    // 新增投诉标题
     complaintContent: item.complaintContent,
     contactPhone: item.contactPhone || '-',

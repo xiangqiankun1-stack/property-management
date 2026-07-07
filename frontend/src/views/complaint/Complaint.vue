@@ -88,13 +88,13 @@
         <el-table-column prop="handleUserName" label="处理人" width="100"/>
         <el-table-column prop="handleTime" label="处理时间" width="180"/>
         <el-table-column prop="handleResult" label="处理结果" min-width="200"/>
-        <el-table-column prop="satisfaction" label="满意度" width="100" align="center">
+       <!--  <el-table-column prop="satisfaction" label="满意度" width="100" align="center">
           <template #default="scope">
             <div class="satisfaction-stars">
               <span v-for="i in 5" :key="i" class="star" :class="{ active: i <= scope.row.satisfaction }">★</span>
             </div>
           </template>
-        </el-table-column>
+        </el-table-column> -->
         <el-table-column prop="createTime" label="投诉时间" width="180"/>
         <el-table-column label="操作" width="165" align="center">
           <template #default="scope">

@@ -430,10 +430,10 @@ const handleCurrentChange = (page) => {
   pagination.currentPage = page
 }
 
-// 初始化
-onMounted(() => {
-  loadHouseList()
-  loadData()
+// ===== 初始化 =====
+onMounted(async () => {
+  await loadHouseList()  
+  await loadData()       
 })
 </script>
 

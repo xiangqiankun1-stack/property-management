@@ -71,8 +71,8 @@
         style="width: 100%"
       >
         <el-table-column prop="id" label="ID" width="80" align="center"/>
-        <el-table-column prop="communityName" label="所属小区"/>
-        <el-table-column prop="buildingName" label="楼栋名称"/>
+        <el-table-column prop="communityName" label="所属小区" align="center"/>
+        <el-table-column prop="buildingName" label="楼栋名称" align="center"/>
         <el-table-column prop="totalFloors" label="总层数" width="100" align="center"/>
         <el-table-column prop="unitsPerFloor" label="每层户数" width="120" align="center"/>
         <el-table-column prop="status" label="状态" width="100" align="center">

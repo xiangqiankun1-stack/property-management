@@ -75,13 +75,13 @@
         style="width: 100%"
       >
         <el-table-column prop="id" label="ID" width="80" align="center"/>
-        <el-table-column prop="communityName" label="所属小区"/>
-        <el-table-column prop="buildingName" label="所属楼栋"/>
-        <el-table-column prop="houseNumber" label="房号"/>
-        <el-table-column prop="floor" label="楼层" width="100" align="center"/>
-        <el-table-column prop="unitNumber" label="单元号" width="100" align="center"/>
-        <el-table-column prop="area" label="面积(㎡)" width="120"/>
-        <el-table-column prop="houseType" label="户型"/>
+        <el-table-column prop="communityName" label="所属小区" width="100" align="center"/>
+        <el-table-column prop="buildingName" label="所属楼栋" width="100" align="center"/>
+        <el-table-column prop="houseNumber" label="房号" width="80" align="center"/>
+        <el-table-column prop="floor" label="楼层" width="80" align="center"/>
+        <el-table-column prop="unitNumber" label="单元号" width="80" align="center"/>
+        <el-table-column prop="area" label="面积(㎡)" width="80" align="center"/>
+        <el-table-column prop="houseType" label="户型" width="100" align="center"/>
         <el-table-column prop="status" label="状态" width="100" align="center">
           <template #default="scope">
             <el-tag :type="getStatusType(scope.row.status)">
@@ -89,7 +89,7 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="createTime" label="创建时间" width="180"/>
+        <el-table-column prop="createTime" label="创建时间" width="180" align="center"/>
         <el-table-column label="操作" width="165" align="center">
           <template #default="scope">
             <el-button 

@@ -54,14 +54,14 @@
         :loading="loading"
         style="width: 100%"
       >
-        <el-table-column prop="id" label="ID" width="80" align="center"/>
-        <el-table-column prop="communityName" label="小区名称"/>
-        <el-table-column prop="communityAddress" label="地址"/>
-        <el-table-column prop="area" label="面积(㎡)" width="120"/>
-        <el-table-column prop="totalBuildings" label="楼栋数" width="100" align="center"/>
-        <el-table-column prop="developer" label="开发商"/>
-        <el-table-column prop="propertyCompany" label="物业公司"/>
-        <el-table-column prop="contactPhone" label="联系电话"/>
+        <el-table-column prop="id" label="ID" width="70" align="center"/>
+        <el-table-column prop="communityName" label="小区名称" width="100" align="center"/>
+        <el-table-column prop="communityAddress" label="地址" width="120" align="center"/>
+        <el-table-column prop="area" label="面积(㎡)" width="80"/>
+        <el-table-column prop="totalBuildings" label="楼栋数" width="80" align="center"/>
+        <el-table-column prop="developer" label="开发商" width="100" align="center"/>
+        <el-table-column prop="propertyCompany" label="物业公司" width="120" align="center"/>
+        <el-table-column prop="contactPhone" label="联系电话" width="120" align="center"/>
         <el-table-column prop="status" label="状态" width="100" align="center">
           <template #default="scope">
             <el-tag :type="scope.row.status === 1 ? 'success' : 'danger'">

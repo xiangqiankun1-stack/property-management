@@ -71,13 +71,13 @@
       
       <el-table :data="displayData" border stripe :loading="loading" style="width: 100%">
         <el-table-column prop="id" label="ID" width="80" align="center"/>
-        <el-table-column prop="complaintNo" label="投诉编号" min-width="150"/>
-        <el-table-column prop="ownerName" label="投诉人" width="100"/>
-        <el-table-column prop="complaintType" label="投诉类型" width="100"/>
-        <el-table-column prop="complaintCategory" label="投诉分类" width="120"/>
-        <el-table-column prop="complaintTitle" label="投诉标题" min-width="180"/>
-        <el-table-column prop="complaintContent" label="投诉内容" min-width="200"/>
-        <el-table-column prop="contactPhone" label="联系电话" width="130"/>
+        <el-table-column prop="complaintNo" label="投诉编号" min-width="150" align="center"/>
+        <el-table-column prop="ownerName" label="投诉人" width="100" align="center"/>
+        <el-table-column prop="complaintType" label="投诉类型" width="100" align="center"/>
+        <el-table-column prop="complaintCategory" label="投诉分类" width="120" align="center"/>
+        <el-table-column prop="complaintTitle" label="投诉标题" min-width="180" align="center"/>
+        <el-table-column prop="complaintContent" label="投诉内容" min-width="200" align="center"/>
+        <el-table-column prop="contactPhone" label="联系电话" width="130" align="center"/>
         <el-table-column prop="status" label="状态" width="100" align="center">
           <template #default="scope">
             <el-tag :type="getStatusType(scope.row.status)">
@@ -85,16 +85,16 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="handleUserName" label="处理人" width="100"/>
-        <el-table-column prop="handleTime" label="处理时间" width="180"/>
-        <el-table-column prop="handleResult" label="处理结果" min-width="200"/>
-        <el-table-column prop="satisfaction" label="满意度" width="100" align="center">
+        <el-table-column prop="handleUserName" label="处理人" width="100" align="center"/>
+        <el-table-column prop="handleTime" label="处理时间" width="180" align="center"/>
+        <el-table-column prop="handleResult" label="处理结果" min-width="200" align="center"/>
+       <!--  <el-table-column prop="satisfaction" label="满意度" width="100" align="center">
           <template #default="scope">
             <div class="satisfaction-stars">
               <span v-for="i in 5" :key="i" class="star" :class="{ active: i <= scope.row.satisfaction }">★</span>
             </div>
           </template>
-        </el-table-column>
+        </el-table-column> -->
         <el-table-column prop="createTime" label="投诉时间" width="180"/>
         <el-table-column label="操作" width="165" align="center">
           <template #default="scope">

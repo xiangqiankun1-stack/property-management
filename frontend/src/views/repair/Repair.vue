@@ -69,13 +69,13 @@
       
       <el-table :data="displayData" border stripe :loading="loading" style="width: 100%">
         <el-table-column prop="id" label="ID" width="80" align="center"/>
-        <el-table-column prop="repairNo" label="报修编号" min-width="150"/>
-        <el-table-column prop="ownerName" label="报修人" width="100"/>
-        <el-table-column prop="houseNumber" label="房号" width="100"/>
-        <el-table-column prop="repairType" label="报修类型" width="100"/>
-        <el-table-column prop="repairContent" label="报修内容" min-width="200"/>
+        <el-table-column prop="repairNo" label="报修编号" min-width="150" align="center"/>
+        <el-table-column prop="ownerName" label="报修人" width="80" align="center"/>
+        <el-table-column prop="houseNumber" label="房号" width="80" align="center"/>
+        <el-table-column prop="repairType" label="报修类型" width="100" align="center"/>
+        <el-table-column prop="repairContent" label="报修内容" min-width="250" align="center"/>
         <el-table-column prop="contactPhone" label="联系电话" width="130"/>
-        <el-table-column prop="expectedTime" label="期望时间" width="180"/>
+        <el-table-column prop="expectedTime" label="期望时间" width="180" align="center"/>
         <el-table-column prop="status" label="状态" width="100" align="center">
           <template #default="scope">
             <el-tag :type="getStatusType(scope.row.status)">
@@ -83,7 +83,7 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="createTime" label="报修时间" width="180"/>
+        <el-table-column prop="createTime" label="报修时间" width="180" align="center"/>
         <el-table-column label="操作" width="165" align="center">
           <template #default="scope">
             <el-button size="small" @click="openDialog('edit', scope.row)">

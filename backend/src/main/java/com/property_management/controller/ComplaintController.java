@@ -2,6 +2,7 @@ package com.property_management.controller;
 
 import com.property_management.common.R;
 import com.property_management.dao.Complaint;
+import com.property_management.dao.ComplaintHandleDTO;
 import com.property_management.enums.FailResultCode;
 import com.property_management.enums.SuccessResultCode;
 import com.property_management.service.ComplaintService;
@@ -71,9 +72,8 @@ public class ComplaintController {
      * PUT /api/v1/complaint/{id}/handle
      */
     @PutMapping("/{id}/handle")
-    public R<Void> handle(@PathVariable Long id, @Validated @RequestBody Complaint complaint) {
-        complaint.setId(id);
-        if (complaintService.handle(complaint)) {
+    public R<Void> handle(@PathVariable Long id, @Validated @RequestBody ComplaintHandleDTO dto) {
+        if (complaintService.handle(id, dto)) {
             return R.success(SuccessResultCode.SUCCESS.getCode(), "处理成功");
         }
         return R.fail(FailResultCode.FAIL.getCode(), "处理失败");

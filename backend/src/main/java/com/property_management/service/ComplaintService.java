@@ -1,6 +1,7 @@
 package com.property_management.service;
 
 import com.property_management.dao.Complaint;
+import com.property_management.dao.ComplaintHandleDTO;
 
 import java.util.List;
 
@@ -16,5 +17,5 @@ public interface ComplaintService {
 
     boolean delete(Long id);
 
-    boolean handle(Complaint complaint);
+    boolean handle(Long id, ComplaintHandleDTO dto);
 }

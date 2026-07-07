@@ -1,6 +1,7 @@
 package com.property_management.service.impl;
 
 import com.property_management.dao.Complaint;
+import com.property_management.dao.ComplaintHandleDTO;
 import com.property_management.mapper.ComplaintMapper;
 import com.property_management.service.ComplaintService;
 import com.property_management.utils.ThreadLocalUtil;
@@ -57,13 +58,20 @@ public class ComplaintServiceImpl implements ComplaintService {
     }
 
     @Override
-    public boolean handle(Complaint complaint) {
+    public boolean handle(Long id, ComplaintHandleDTO dto) {
+        Complaint complaint = complaintMapper.selectById(id);
+        if (complaint == null) {
+            return false;
+        }
         complaint.setHandleTime(LocalDateTime.now());
         Long currentUserId = ThreadLocalUtil.getCurrentUserId();
         if (currentUserId == null) {
             currentUserId = 0L;
         }
         complaint.setHandleUserId(currentUserId);
+        complaint.setHandleResult(dto.getHandleResult());
+        complaint.setStatus(dto.getStatus());
+        complaint.setSatisfaction(dto.getSatisfaction());
         return complaintMapper.updateById(complaint) > 0;
     }
 }

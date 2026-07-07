@@ -36,6 +36,9 @@ public class ComplaintServiceImpl implements ComplaintService {
                 + String.format("%04d", new Random().nextInt(10000));
         complaint.setComplaintNo(complaintNo);
 
+        // 设置默认状态为待处理
+        complaint.setStatus(0);
+
         Long currentUserId = ThreadLocalUtil.getCurrentUserId();
         if (currentUserId == null) {
             currentUserId = 0L;
@@ -64,6 +67,8 @@ public class ComplaintServiceImpl implements ComplaintService {
             currentUserId = 0L;
         }
         complaint.setHandleUserId(currentUserId);
+        // 处理完成后自动将状态改为已处理
+        complaint.setStatus(2);
         return complaintMapper.updateById(complaint) > 0;
     }
 }

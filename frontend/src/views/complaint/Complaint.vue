@@ -87,13 +87,7 @@
         <el-table-column prop="handleUserName" label="处理人" width="100" align="center"/>
         <el-table-column prop="handleTime" label="处理时间" width="180" align="center"/>
         <el-table-column prop="handleResult" label="处理结果" min-width="200" align="center"/>
-       <!--  <el-table-column prop="satisfaction" label="满意度" width="100" align="center">
-          <template #default="scope">
-            <div class="satisfaction-stars">
-              <span v-for="i in 5" :key="i" class="star" :class="{ active: i <= scope.row.satisfaction }">★</span>
-            </div>
-          </template>
-        </el-table-column> -->
+      
         <el-table-column prop="createTime" label="投诉时间" width="180"/>
         <el-table-column label="操作" width="165" align="center">
           <template #default="scope">
@@ -155,7 +149,7 @@
     </el-dialog>
 
     <!-- 处理投诉弹窗 -->
-    <el-dialog v-model="handleDialogVisible" title="处理投诉" width="500px" @close="handleDialogClose">
+    <el-dialog v-model="handleDialogVisible" title="处理投诉" width="500px" @close="handleDialogClose2">
       <el-form :model="handleForm" ref="handleFormRef" :rules="handleRules" label-width="100px">
         <el-form-item label="投诉标题" disabled>
           <el-input :value="handleForm.complaintTitle" disabled />
@@ -163,33 +157,8 @@
         <el-form-item label="投诉内容" disabled>
           <el-input :value="handleForm.complaintContent" type="textarea" disabled :rows="3" />
         </el-form-item>
-        <el-form-item label="处理人ID" prop="handleUserId">
-          <el-input v-model.number="handleForm.handleUserId" type="number" placeholder="请输入处理人ID" />
-        </el-form-item>
         <el-form-item label="处理结果" prop="handleResult">
-          <el-textarea v-model="handleForm.handleResult" placeholder="请输入处理结果" :rows="3" />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="handleDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleComplaint">确定处理</el-button>
-      </template>
-    </el-dialog>
-
-    <!-- 处理投诉弹窗 -->
-    <el-dialog v-model="handleDialogVisible" title="处理投诉" width="500px" @close="handleDialogClose">
-      <el-form :model="handleForm" ref="handleFormRef" :rules="handleRules" label-width="100px">
-        <el-form-item label="投诉标题" disabled>
-          <el-input :value="handleForm.complaintTitle" disabled />
-        </el-form-item>
-        <el-form-item label="投诉内容" disabled>
-          <el-input :value="handleForm.complaintContent" type="textarea" disabled :rows="3" />
-        </el-form-item>
-        <el-form-item label="处理人ID" prop="handleUserId">
-          <el-input v-model.number="handleForm.handleUserId" type="number" placeholder="请输入处理人ID" />
-        </el-form-item>
-        <el-form-item label="处理结果" prop="handleResult">
-          <el-textarea v-model="handleForm.handleResult" placeholder="请输入处理结果" :rows="3" />
+          <el-input v-model="handleForm.handleResult" type="textarea" placeholder="请输入处理结果" :rows="3" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -204,7 +173,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Search, RefreshLeft, Plus, Edit, Delete } from '@element-plus/icons-vue'
-import { getComplaintList, createComplaint, updateComplaint, deleteComplaint } from '@/api/complaint'
+import { getComplaintList, createComplaint, deleteComplaint, handleComplaint as handleComplaintApi } from '@/api/complaint'
 
 const searchForm = reactive({ 
   complaintNo: '', 
@@ -236,7 +205,6 @@ const handleForm = reactive({
   id: null,
   complaintTitle: '',
   complaintContent: '',
-  handleUserId: null,
   handleResult: ''
 })
 
@@ -250,7 +218,6 @@ const rules = {
 
 // 处理投诉表单规则
 const handleRules = {
-  handleUserId: [{ required: true, message: '请输入处理人ID', trigger: 'blur' }, { type: 'number', message: '必须是数字', trigger: 'blur' }],
   handleResult: [{ required: true, message: '请输入处理结果', trigger: 'blur' }]
 }
 
@@ -432,13 +399,14 @@ const handleSubmit = async () => {
   }
 }
 
+
 // 处理投诉
 const handleComplaint = async () => {
   if (!handleFormRef.value) return
   const valid = await handleFormRef.value.validate()
   if (!valid) return
   try {
-    await handleComplaintApi(handleForm.id, { handleUserId: handleForm.handleUserId, handleResult: handleForm.handleResult })
+    await handleComplaintApi(handleForm.id, { handleResult: handleForm.handleResult })
     ElMessage.success('处理成功')
     handleDialogVisible.value = false
     loadData()
